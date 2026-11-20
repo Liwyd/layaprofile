@@ -31,7 +31,7 @@ const DropdownStyles = styled.div`
     svg {
       margin-left: 0.5rem;
     }
-    label {
+    .dropdown__label {
       transition: ${theme.transition};
       cursor: pointer;
     }
@@ -78,7 +78,7 @@ const DropdownStyles = styled.div`
     }
   }
   ${props =>
-    props.active &&
+    props.$active &&
     css`
       .dropdown__list {
         opacity: 1;

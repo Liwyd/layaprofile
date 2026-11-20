@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { theme } from '../style';
 const { colors } = theme;
 
-const LimitStyles = styled.main`
+const LimitStyles = styled.div`
   .limit {
     position: absolute;
     top: 0;

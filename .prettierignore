@@ -1,0 +1,8 @@
+node_modules
+.next
+coverage
+public
+laya
+package-lock.json
+# Governance and planning documents are edited by hand
+*.md

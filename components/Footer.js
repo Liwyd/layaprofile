@@ -38,22 +38,8 @@ const Footer = () => (
         Chart.js
       </a>
       &middot;
-      <a
-        href="https://github.com/IonicaBizau/node-gh-polyglot"
-        target="_blank"
-        rel="noopener noreferrer">
-        GitHub Polyglot
-      </a>
-      &middot;
       <a href="https://www.styled-components.com/" target="_blank" rel="noopener noreferrer">
         Styled Components
-      </a>
-      &middot;
-      <a
-        href="https://github.com/joshwcomeau/react-flip-move"
-        target="_blank"
-        rel="noopener noreferrer">
-        React Flip Move
       </a>
       and more!
     </div>

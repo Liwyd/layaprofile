@@ -129,7 +129,7 @@ const langColors = {
   TeX: '#3D6117',
   Nemerle: '#3d3c6e',
   KRL: '#28431f',
-  'Ren\'Py': '#ff7f7f',
+  "Ren'Py": '#ff7f7f',
   'Unified Parallel C': '#4e3617',
   Golo: '#88562A',
   Fancy: '#7b9db4',

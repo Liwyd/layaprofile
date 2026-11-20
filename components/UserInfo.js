@@ -1,16 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Octicon, { Briefcase, Calendar, Location } from '@primer/octicons-react';
+import { BriefcaseIcon, CalendarIcon, LocationIcon } from './icons';
 import UserInfoStyles from './styles/UserInfoStyles';
 import { Section } from '../style';
 
 const UserInfo = ({ userData }) => (
-  <Section dark>
+  <Section $dark>
     {userData && (
       <UserInfoStyles>
         {userData.avatar_url && (
           <div className="avatar">
-            <img src={userData.avatar_url} alt="avatar" />
+            {/* GitHub serves avatars from its own CDN; next/image would add an unneeded optimizer. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={userData.avatar_url}
+              alt={`${userData.login || 'User'} avatar`}
+              width={150}
+              height={150}
+            />
           </div>
         )}
 
@@ -27,21 +34,21 @@ const UserInfo = ({ userData }) => (
         <div className="info">
           {userData.company && (
             <span className="info__item">
-              <Octicon icon={Briefcase} size="small" />
+              <BriefcaseIcon />
               {userData.company}
             </span>
           )}
 
           {userData.location && (
             <span className="info__item">
-              <Octicon icon={Location} size="small" />
+              <LocationIcon />
               {userData.location}
             </span>
           )}
 
           {userData.created_at && (
             <span className="info__item">
-              <Octicon icon={Calendar} size="small" />
+              <CalendarIcon />
               Joined{' '}
               {new Date(userData.created_at).toLocaleDateString('en-US', {
                 month: 'long',

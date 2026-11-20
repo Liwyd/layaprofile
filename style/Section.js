@@ -13,7 +13,7 @@ const Section = styled.section`
   `};
 
   ${props =>
-    props.dark &&
+    props.$dark &&
     css`
       background-color: ${colors.black};
       color: ${colors.lightestBlue};

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import Router from 'next/router';
-import Octicon, { MarkGithub } from '@primer/octicons-react';
+import { useRouter } from 'next/router';
 import { Head } from '../components';
+import { MarkGithubIcon } from '../components/icons';
 import styled from 'styled-components';
 import { theme, mixins } from '../style';
+import { isValidUsername } from '../lib/validation';
 const { colors, fonts } = theme;
 
 const StyledContainer = styled.div`
@@ -45,6 +46,12 @@ const StyledContainer = styled.div`
       text-align: center;
     }
 
+    .form-error {
+      margin: 1rem 0 0;
+      color: ${colors.orange};
+      font-size: 1rem;
+    }
+
     .submit {
       ${mixins.blueButton};
       margin-top: 3rem;
@@ -54,25 +61,50 @@ const StyledContainer = styled.div`
 `;
 
 const Home = () => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
-  const handleChange = e => setUsername(e.target.value);
+  const [invalid, setInvalid] = useState(false);
+
+  const handleChange = e => {
+    setUsername(e.target.value);
+    setInvalid(false);
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    const trimmed = username.trim();
+    if (!isValidUsername(trimmed)) {
+      setInvalid(true);
+      return;
+    }
+    router.push(`/user/${trimmed}`);
+  };
 
   return (
     <main>
       <Head title="OctoProfile" />
 
       <StyledContainer>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            Router.push({
-              pathname: '/user',
-              query: { id: username },
-            });
-          }}>
-          <Octicon icon={MarkGithub} size="large" />
+        <form onSubmit={handleSubmit} noValidate>
+          <MarkGithubIcon size={32} />
           <label htmlFor="username">Find Your OctoProfile</label>
-          <input name="username" type="text" onChange={handleChange} />
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={username}
+            onChange={handleChange}
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            aria-invalid={invalid}
+            aria-describedby={invalid ? 'username-error' : undefined}
+          />
+          {invalid && (
+            <p id="username-error" className="form-error" role="alert">
+              Enter a valid GitHub username.
+            </p>
+          )}
         </form>
       </StyledContainer>
     </main>

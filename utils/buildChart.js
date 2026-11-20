@@ -1,48 +1,51 @@
-import Chart from 'chart.js';
+import {
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  Chart,
+  DoughnutController,
+  Legend,
+  LinearScale,
+  PieController,
+  Tooltip,
+} from 'chart.js';
 import { theme } from '../style';
 const { fonts } = theme;
 
-const buildScales = axes => {
-  const scales = {
-    xAxes: [
-      {
-        ticks: {
-          fontFamily: fonts.inter,
-          fontSize: 12,
-        },
-      },
-    ],
-    yAxes: [
-      {
-        ticks: {
-          beginAtZero: true,
-          fontFamily: fonts.inter,
-          fontSize: 12,
-        },
-      },
-    ],
-  };
+// Register only the pieces the app uses so the rest of Chart.js is tree-shaken away.
+Chart.register(
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  DoughnutController,
+  Legend,
+  LinearScale,
+  PieController,
+  Tooltip,
+);
 
-  return axes ? scales : null;
-};
+const font = { family: fonts.inter, size: 12 };
 
-const buildLegend = legend => {
-  const leg = {
-    position: 'right',
-    labels: {
-      fontFamily: fonts.inter,
-    },
-  };
-  return legend ? leg : null;
-};
+const buildScales = axes =>
+  axes
+    ? {
+        x: { ticks: { font } },
+        y: { beginAtZero: true, ticks: { font, precision: 0 } },
+      }
+    : undefined;
+
+const buildLegend = legend =>
+  legend
+    ? { display: true, position: 'right', labels: { font: { family: fonts.inter } } }
+    : { display: false };
 
 const buildChart = config => {
   const { ctx, chartType, labels, data, backgroundColor, borderColor, axes, legend } = config;
 
   return new Chart(ctx, {
     type: chartType,
-    responsive: true,
-    maintainAspectRatio: false,
     data: {
       labels,
       datasets: [
@@ -56,11 +59,13 @@ const buildChart = config => {
     },
     options: {
       scales: buildScales(axes),
-      legend: buildLegend(legend),
-      tooltips: {
-        titleFontFamily: fonts.inter,
-        bodyFontFamily: fonts.inter,
-        cornerRadius: 3,
+      plugins: {
+        legend: buildLegend(legend),
+        tooltip: {
+          titleFont: { family: fonts.inter },
+          bodyFont: { family: fonts.inter },
+          cornerRadius: 3,
+        },
       },
     },
   });

@@ -1,49 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import Octicon, { Repo, Star, RepoForked, TriangleDown } from '@primer/octicons-react';
-import FlipMove from 'react-flip-move';
-import { langColors } from '../utils';
+import { RepoIcon, StarIcon, RepoForkedIcon, TriangleDownIcon } from './icons';
+import { getLanguageColor } from '../lib/languageStats';
 import ReposStyles from './styles/ReposStyles';
 import DropdownStyles from './styles/DropdownStyles';
 import { Section } from '../style';
 
+const LIMIT = 8;
+const SORT_PROPERTIES = {
+  stars: 'stargazers_count',
+  forks: 'forks_count',
+  size: 'size',
+};
+const sortTypes = Object.keys(SORT_PROPERTIES);
+
 const Repos = ({ repoData }) => {
-  const [topRepos, setTopRepos] = useState([]);
   const [sortType, setSortType] = useState('stars');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const getTopRepos = type => {
-    const LIMIT = 8;
-    const map = {
-      stars: 'stargazers_count',
-      forks: 'forks_count',
-      size: 'size',
-    };
-    const sortProperty = map[type];
-    const sorted = repoData
+  const topRepos = useMemo(() => {
+    const sortProperty = SORT_PROPERTIES[sortType];
+    return repoData
       .filter(repo => !repo.fork)
       .sort((a, b) => b[sortProperty] - a[sortProperty])
       .slice(0, LIMIT);
+  }, [repoData, sortType]);
 
-    setTopRepos(sorted);
+  const toggleDropdown = () => setDropdownOpen(open => !open);
+
+  const changeRepoSort = type => {
+    setSortType(type);
+    setDropdownOpen(false);
   };
-
-  useEffect(() => {
-    if (repoData.length) {
-      getTopRepos();
-    }
-  }, []);
-
-  useEffect(() => getTopRepos(sortType), [sortType]);
-
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-
-  const changeRepoSort = sortType => {
-    setSortType(sortType);
-    toggleDropdown();
-  };
-
-  const sortTypes = ['stars', 'forks', 'size'];
 
   return (
     <Section>
@@ -52,15 +40,22 @@ const Repos = ({ repoData }) => {
           <h2>Top Repos</h2>
           <div className="dropdown-wrapper">
             <span className="label">by</span>
-            <DropdownStyles active={dropdownOpen}>
-              <button className="dropdown__button" onClick={() => toggleDropdown()}>
-                <label>{sortType}</label>
-                <Octicon icon={TriangleDown} />
+            <DropdownStyles $active={dropdownOpen}>
+              <button
+                type="button"
+                className="dropdown__button"
+                aria-haspopup="true"
+                aria-expanded={dropdownOpen}
+                onClick={toggleDropdown}>
+                <span className="dropdown__label">{sortType}</span>
+                <TriangleDownIcon />
               </button>
               <ul className="dropdown__list">
-                {sortTypes.map((type, i) => (
-                  <li className="dropdown__list-item" key={i}>
-                    <button onClick={() => changeRepoSort(type)}>{type}</button>
+                {sortTypes.map(type => (
+                  <li className="dropdown__list-item" key={type}>
+                    <button type="button" onClick={() => changeRepoSort(type)}>
+                      {type}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -70,7 +65,7 @@ const Repos = ({ repoData }) => {
 
         <div className="repo-list">
           {topRepos.length > 0 ? (
-            <FlipMove typeName="ul">
+            <ul>
               {topRepos.map(repo => (
                 <li key={repo.id}>
                   <a
@@ -80,27 +75,29 @@ const Repos = ({ repoData }) => {
                     className="repo">
                     <div className="repo__top">
                       <div className="repo__name">
-                        <Octicon icon={Repo} />
+                        <RepoIcon />
                         <h3>{repo.name}</h3>
                       </div>
                       <p>{repo.description}</p>
                     </div>
                     <div className="repo__stats">
                       <div className="repo__stats--left">
+                        {repo.language && (
+                          <span>
+                            <div
+                              className="language"
+                              style={{ backgroundColor: getLanguageColor(repo.language) }}
+                            />
+                            {repo.language}
+                          </span>
+                        )}
                         <span>
-                          <div
-                            className="language"
-                            style={{ backgroundColor: langColors[repo.language] }}
-                          />
-                          {repo.language}
-                        </span>
-                        <span>
-                          <Octicon icon={Star} />
+                          <StarIcon />
                           {repo.stargazers_count.toLocaleString()}
                         </span>
                         <span>
-                          <Octicon icon={RepoForked} />
-                          {repo.forks.toLocaleString()}
+                          <RepoForkedIcon />
+                          {repo.forks_count.toLocaleString()}
                         </span>
                       </div>
                       <div className="repo__stats--right">
@@ -110,7 +107,7 @@ const Repos = ({ repoData }) => {
                   </a>
                 </li>
               ))}
-            </FlipMove>
+            </ul>
           ) : (
             <p>No available repositories!</p>
           )}

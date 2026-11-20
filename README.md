@@ -1,41 +1,45 @@
-# OctoProfile
+# LayaProfile
 
-A nicer look at your GitHub Profile! With charts!
+Local intelligence for GitHub profiles and repositories.
 
-![demo](https://raw.githubusercontent.com/bchiang7/octoprofile/master/static/og.png)
+LayaProfile is an evolution of [OctoProfile](https://github.com/bchiang7/octoprofile) by Brittany
+Chiang, used under the MIT license (see [LICENSE](LICENSE)).
+
+![demo](public/og.png)
 
 Built with:
 
-- [Next.js](https://nextjs.org/)
-- [GitHub Polyglot](https://github.com/IonicaBizau/node-gh-polyglot)
+- [Next.js](https://nextjs.org/) (Pages Router)
+- [React](https://react.dev/)
 - [Chart.js](https://www.chartjs.org/)
-- [React Flip Move](https://github.com/joshwcomeau/react-flip-move)
-- [Styled Components](https://www.styled-components.com/)
+- [Styled Components](https://styled-components.com/)
 
 ## Getting Started
+
+Requires Node.js 20 or newer (`.nvmrc` pins 22).
 
 1. Install dependencies
 
    ```bash
-   yarn
+   npm install
    ```
 
-2. Fire up the server and watch files
+2. Fire up the dev server
 
    ```bash
-   yarn dev
+   npm run dev
    ```
 
-## Deployment
+3. Open http://localhost:3000 and search for a GitHub username. Profiles live at `/user/<username>`.
 
-1. Install the Now CLI
+## Scripts
 
-   ```bash
-   yarn add now
-   ```
-
-2. Deploy!
-
-   ```bash
-   now
-   ```
+| Script               | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Start the development server             |
+| `npm run build`      | Create the production (standalone) build |
+| `npm start`          | Serve the production build               |
+| `npm run lint`       | Run ESLint                               |
+| `npm run format`     | Format the source with Prettier          |
+| `npm test`           | Run the unit tests once (Vitest)         |
+| `npm run test:watch` | Run the unit tests in watch mode         |
