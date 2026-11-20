@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M5 — Skills, learning path, comparison
-- Overall completion estimate: ~45%
+- Current milestone: M6 — UI
+- Overall completion estimate: ~55%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -96,12 +96,12 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M5 — Skills, learning path, comparison.
-- `lib/analysis/skills.js`: evidence map from languages, manifests, topics and archetypes, traceable to repos.
-- `lib/analysis/learningPath.js`: a transparent ruleset per target role.
-- `lib/analysis/compare.js`.
-- `/api/compare`.
-- Tests.
+M6 — UI.
+- Editorial design system.
+- `/user/[id]` report sections: overview, stats, profile score and checklist, repositories with on-demand quality analysis, skill evidence explorer, learning path with a role selector, share card.
+- `/compare/[a]/[b]` difference view.
+- Designed loading, empty, partial and error states.
+- Responsive and accessible.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -132,6 +132,13 @@ M5 — Skills, learning path, comparison.
 - `eval/labels.jsonl` (30 developer-labelled fixtures, including Persian and injection cases), `scripts/eval-laya.mjs` and `docs/LAYA.md`.
 - 588 tests.
 
+**M5 Skills, learning path, comparison.**
+- `lib/analysis` technologies (56-entry table), skills, learningPath (6 roles, no external links) and compare (no winner or ranking; popularity rows flagged).
+- Routes: `/api/compare?a&b`, `/api/learning-path/[user]?role`; the profile API includes `skills`.
+- `docs/SKILLS.md`.
+- 750 tests.
+- Laya `skill_category` is wired in the model but not yet asked by any route.
+
 ## 6. Known Issues and Technical Debt
 - **Laya is unmeasured.**
   - Impact: thresholds are provisional, and RAM fit on a 5.7 GB host is unknown.
@@ -143,6 +150,6 @@ M5 — Skills, learning path, comparison.
   - Resolution: M7.
 
 ## 7. Next Actions
-1. M5: skills, learning path, comparison.
-2. M6: UI.
+1. M6: design system and report page.
+2. M6: compare page.
 3. M4 follow-up: measure the real model and run the eval (needs Docker).
