@@ -2,8 +2,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 // Content Security Policy.
 // - styled-components injects <style> tags, so inline styles must be allowed.
-// - The client still calls api.github.com directly; remove it from connect-src
-//   once GitHub requests move server-side.
+// - GitHub is only called from the server (pages/api), so connect-src stays 'self'.
 // - 'unsafe-eval' is only needed by the Next.js development runtime.
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -11,7 +10,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://avatars.githubusercontent.com https://*.githubusercontent.com",
   "font-src 'self'",
-  "connect-src 'self' https://api.github.com",
+  "connect-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

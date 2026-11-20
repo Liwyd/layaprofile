@@ -9,11 +9,10 @@ import {
   Corner,
   Error as ErrorState,
   RateLimit,
+  Notice,
 } from '../../components';
 import { computeLanguageStats } from '../../lib/languageStats';
 import { isValidUsername } from '../../lib/validation';
-
-const GITHUB_API = 'https://api.github.com';
 
 // Error types understood by the Error component.
 const ERROR_NOT_FOUND = 404;
@@ -21,39 +20,57 @@ const ERROR_RATE_LIMITED = 403;
 const ERROR_UNKNOWN = 500;
 const INVALID_USERNAME_ERROR = { type: ERROR_NOT_FOUND };
 
-class HttpError extends globalThis.Error {
-  constructor(status) {
-    super(`GitHub API responded with status ${status}`);
-    this.name = 'HttpError';
+// Mirrors the repository cap enforced by the server (3 pages of 100).
+const REPO_LIMIT = 300;
+
+// Our API answers with `{ error: { code, message } }`; GitHub itself is never called from the browser.
+class ApiError extends globalThis.Error {
+  constructor(status, code) {
+    super(`Profile API responded with status ${status}${code ? ` (${code})` : ''}`);
+    this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
 }
 
 const errorTypeFor = err => {
-  if (err instanceof HttpError) {
-    if (err.status === 404) return ERROR_NOT_FOUND;
-    // GitHub signals primary and secondary rate limits with 403 or 429.
-    if (err.status === 403 || err.status === 429) return ERROR_RATE_LIMITED;
+  if (err instanceof ApiError) {
+    if (err.code === 'NOT_FOUND') return ERROR_NOT_FOUND;
+    if (err.code === 'RATE_LIMITED') return ERROR_RATE_LIMITED;
   }
   return ERROR_UNKNOWN;
 };
 
-const fetchGitHub = async (path, signal) => {
-  const response = await fetch(`${GITHUB_API}${path}`, {
+const fetchProfile = async (username, signal) => {
+  const response = await fetch(`/api/profile/${encodeURIComponent(username)}`, {
     signal,
-    headers: { Accept: 'application/vnd.github+json' },
+    headers: { Accept: 'application/json' },
   });
-  if (!response.ok) {
-    throw new HttpError(response.status);
+
+  let body = null;
+  try {
+    body = await response.json();
+  } catch (err) {
+    if (signal.aborted) throw err;
+    // A non-JSON body (for example a proxy error page) is handled through the status below.
+    console.error('Profile API returned a non-JSON body:', err);
   }
-  return response.json();
+
+  if (!response.ok) {
+    throw new ApiError(response.status, body?.error?.code);
+  }
+  if (!body || !body.user || !Array.isArray(body.repos)) {
+    throw new globalThis.Error('Unexpected profile response from the API');
+  }
+  return body;
 };
 
 const User = ({ username }) => {
-  const [userData, setUserData] = useState(null);
-  const [repoData, setRepoData] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
-  const [rateLimit, setRateLimit] = useState(null);
+
+  const userData = profile?.user ?? null;
+  const repoData = profile?.repos ?? null;
 
   // Language stats are derived from the repositories already fetched; no extra requests.
   const langData = useMemo(() => (repoData ? computeLanguageStats(repoData) : null), [repoData]);
@@ -63,48 +80,21 @@ const User = ({ username }) => {
     if (!username) return undefined;
 
     // The page component is reused when navigating between profiles, so reset the state.
-    setUserData(null);
-    setRepoData(null);
-    setRateLimit(null);
+    setProfile(null);
     setError(null);
 
     const controller = new AbortController();
     const { signal } = controller;
 
-    const reportError = err => {
-      if (signal.aborted) return;
-      console.error('Error:', err);
-      setError({ type: errorTypeFor(err) });
-    };
-
-    // The rate limit indicator is optional: a failure is logged but never replaces the page.
-    fetchGitHub('/rate_limit', signal)
+    fetchProfile(username, signal)
       .then(json => {
-        if (signal.aborted) return;
-        const { core } = json.resources;
-        setRateLimit(core);
-        if (core.remaining < 1) {
-          setError({ type: ERROR_RATE_LIMITED });
-        }
+        if (!signal.aborted) setProfile(json);
       })
       .catch(err => {
-        if (!signal.aborted) console.error('Failed to load the rate limit:', err);
+        if (signal.aborted) return;
+        console.error('Error:', err);
+        setError({ type: errorTypeFor(err) });
       });
-
-    fetchGitHub(`/users/${username}`, signal)
-      .then(json => {
-        if (!signal.aborted) setUserData(json);
-      })
-      .catch(reportError);
-
-    fetchGitHub(`/users/${username}/repos?per_page=100`, signal)
-      .then(json => {
-        if (!Array.isArray(json)) {
-          throw new globalThis.Error('Unexpected repository response from GitHub');
-        }
-        if (!signal.aborted) setRepoData(json);
-      })
-      .catch(reportError);
 
     return () => controller.abort();
   }, [username]);
@@ -113,7 +103,7 @@ const User = ({ username }) => {
 
   return (
     <main>
-      {rateLimit && <RateLimit rateLimit={rateLimit} />}
+      {profile?.rateLimit && <RateLimit rateLimit={profile.rateLimit} />}
 
       {failure ? (
         <ErrorState error={failure} />
@@ -128,6 +118,15 @@ const User = ({ username }) => {
           {langData && repoData && <Charts langData={langData} repoData={repoData} />}
 
           {repoData && <Repos repoData={repoData} />}
+
+          {profile && (
+            <Notice
+              stale={profile.stale === true}
+              fetchedAt={profile.fetchedAt}
+              truncated={profile.truncated === true}
+              repoLimit={REPO_LIMIT}
+            />
+          )}
 
           <Footer />
         </>

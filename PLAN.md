@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M2 — GitHub server layer
-- Overall completion estimate: ~15%
+- Current milestone: M3 — Scoring engine
+- Overall completion estimate: ~25%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -26,7 +26,7 @@
 - READMEs are fetched only for analyzed repos, with a size cap. Repository trees are top level only.
 - The contribution calendar is shown only when a token is configured (GraphQL). It is never fabricated.
 - Trade-off: no persistence across restarts. That is acceptable, so there is no database or Redis.
-- Status: pending (M2).
+- Status: done (M2). Deviations: the stale fallback also covers rate limits and other non-404 upstream errors. Pagination builds `&page=N` itself and does not follow `Link` URLs. Confirmed-absent README/tree/release are cached as `null`. Singletons live on `globalThis`.
 
 **D3 — Pure, unit-tested domain modules (`lib/analysis/`).**
 - Every score returns `{score|null, label, coverage, components[{id, points, max, status: verified|rule|model|unknown, evidence}]}`.
@@ -58,7 +58,7 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
 - **M1 Foundation** — done.
 - **M2 GitHub server layer**
   - Build `lib/github` (client, cache, validation, errors, rate limiter).
-  - Add `/api/profile/[user]`, `/api/repos/[user]/[repo]/analysis` (deterministic part) and `/api/health`.
+  - Add `/api/profile/[user]`, `/api/repos/[user]/[repo]/evidence` (raw evidence; scoring is added in M3) and `/api/health`.
   - Switch the client off direct GitHub calls.
   - Acceptance: unit and integration tests run against a mocked fetch and cover pagination, 404, rate limit, network error, cache hit, ETag 304 and invalid input. The profile page renders through our API.
 - **M3 Scoring engine**
@@ -91,7 +91,7 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M2 — GitHub server layer (see roadmap acceptance criteria).
+M3 — Scoring engine: pure modules in `lib/analysis/` consuming `loadProfile`/`loadRepoEvidence` output, an `/api/repos/[user]/[repo]/analysis` route, and `docs/SCORING.md`.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -102,17 +102,19 @@ M2 — GitHub server layer (see roadmap acceptance criteria).
 - Removed the fake `utils/scoring.js` and `utils/layaAdapter.js` stubs, plus `now.json` and `yarn.lock`.
 - Added security headers. `npm audit` reports 0 vulnerabilities.
 
+**M2 GitHub server layer.**
+- `lib/github` (client, LRU+TTL+ETag cache, typed errors, token bucket, profile and repo-evidence loaders) and `lib/api/handler.js`.
+- Routes: `/api/profile/[user]`, `/api/repos/[user]/[repo]/evidence`, `/api/health`.
+- The browser now calls only our API; CSP is `connect-src 'self'`.
+- Stale and truncated notices.
+- 224 tests.
+
 ## 6. Known Issues and Technical Debt
-- **GitHub requests are still made from the browser.**
-  - Impact: unauthenticated limit of 60 requests/hour per visitor IP, and no caching.
-  - Evidence: `pages/user/[id].js`.
-  - Blocks release: yes.
-  - Resolution: M2.
 - **`docker-compose.yml`, `Dockerfile` and `.github/workflows/ci.yml` from the original commit are broken** (Node 14, missing repo name in the image tag, deprecated actions).
   - Blocks release: yes.
   - Resolution: M7.
 
 ## 7. Next Actions
-1. M2: `lib/github` client, cache and errors with tests.
-2. M2: API routes and switching the client to them.
-3. M3: scoring engine.
+1. M3: scoring engine and analysis route.
+2. M4: Laya integration (needs Docker access for measurement).
+3. M5: skills, learning path, comparison.
