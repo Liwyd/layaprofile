@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M3 — Scoring engine
-- Overall completion estimate: ~25%
+- Current milestone: M4 — Laya integration
+- Overall completion estimate: ~35%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -34,7 +34,9 @@
 - Repo weights: documentation 35, metadata 20, maintenance 25, structure 20, renormalized over measurable components.
 - Labels: ≥80 Excellent, ≥60 Good, <60 Needs improvement. Coverage <50% → Insufficient evidence.
 - Formulas live in `docs/SCORING.md`.
-- Status: pending (M3).
+- A dimension with coverage < 0.4 has a null score (prevents one surviving check from standing in for a dimension).
+- Keyword checks are unknown, not 0, for truncated or non-Latin/Persian READMEs.
+- Status: done (M3).
 
 **D4 — Laya runs as a sidecar using the official `laya-serve` (PyPI `laya[serve]==0.5.0`).**
 - Rejected alternatives:
@@ -91,7 +93,11 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M3 — Scoring engine: pure modules in `lib/analysis/` consuming `loadProfile`/`loadRepoEvidence` output, an `/api/repos/[user]/[repo]/analysis` route, and `docs/SCORING.md`.
+M4 — Laya integration.
+- `lib/laya` client and question catalog, with a fallback when Laya is unavailable.
+- Laya status in `/api/health`.
+- Eval fixtures.
+- Measurement requires Docker access; the code and mocked tests do not.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -109,12 +115,19 @@ M3 — Scoring engine: pure modules in `lib/analysis/` consuming `loadProfile`/`
 - Stale and truncated notices.
 - 224 tests.
 
+**M3 Scoring engine.**
+- `lib/analysis` modules: labels, readmeChecks, structureChecks, repoScore, profileScore, archetype, plus shared helpers.
+- `/api/repos/[user]/[repo]/analysis` route.
+- The profile API includes `profileReadme` and `profileScore`.
+- `docs/SCORING.md`.
+- 420 tests, including popularity-invariance and missing-data boundaries.
+
 ## 6. Known Issues and Technical Debt
 - **`docker-compose.yml`, `Dockerfile` and `.github/workflows/ci.yml` from the original commit are broken** (Node 14, missing repo name in the image tag, deprecated actions).
   - Blocks release: yes.
   - Resolution: M7.
 
 ## 7. Next Actions
-1. M3: scoring engine and analysis route.
-2. M4: Laya integration (needs Docker access for measurement).
+1. M4: Laya client, question catalog and fallback (mocked tests).
+2. M4: measure the real model (needs Docker).
 3. M5: skills, learning path, comparison.
