@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M4 — Laya integration
-- Overall completion estimate: ~35%
+- Current milestone: M5 — Skills, learning path, comparison
+- Overall completion estimate: ~45%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -47,7 +47,10 @@
 - The app calls `POST /v1/systemone/batch` with a timeout, schema validation and a circuit breaker. It caches results by (repo, pushed_at, model).
 - Abstained or non-`auto` routes are treated as "uncertain".
 - Laya output only adjusts the documentation sub-assessment and is labelled as a model prediction.
-- Status: `laya/Dockerfile` written. Image build and resource measurement are unverified.
+- Status: code done (M4).
+  - `lib/laya`: client with gating, circuit breaker, result cache and a question catalog (yes/no questions use A/B `choice` to avoid the `noul` label bias).
+  - `applyLayaAssessment` adds a `model` check to documentation. It is absent when Laya is disabled and unknown when Laya is uncertain or unavailable.
+  - NOT YET VERIFIED: the image build, real inference, RAM/latency measurements, threshold eval (`scripts/eval-laya.mjs`) and whether the HTTP route accepts the per-bucket `min_confidence` map (the client falls back to a scalar).
 
 **D5 — Security headers in `next.config.js`.**
 - Production CSP `script-src 'self'`, `frame-ancestors 'none'`, nosniff, referrer policy, no `X-Powered-By`.
@@ -93,11 +96,12 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M4 — Laya integration.
-- `lib/laya` client and question catalog, with a fallback when Laya is unavailable.
-- Laya status in `/api/health`.
-- Eval fixtures.
-- Measurement requires Docker access; the code and mocked tests do not.
+M5 — Skills, learning path, comparison.
+- `lib/analysis/skills.js`: evidence map from languages, manifests, topics and archetypes, traceable to repos.
+- `lib/analysis/learningPath.js`: a transparent ruleset per target role.
+- `lib/analysis/compare.js`.
+- `/api/compare`.
+- Tests.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -122,12 +126,23 @@ M4 — Laya integration.
 - `docs/SCORING.md`.
 - 420 tests, including popularity-invariance and missing-data boundaries.
 
+**M4 Laya integration (code).**
+- `lib/laya` (questions, state, client, assess, assessCache) and `lib/analysis/layaAssessment.js`.
+- The analysis route returns `laya`, and `/api/health` reports Laya status.
+- `eval/labels.jsonl` (30 developer-labelled fixtures, including Persian and injection cases), `scripts/eval-laya.mjs` and `docs/LAYA.md`.
+- 588 tests.
+
 ## 6. Known Issues and Technical Debt
+- **Laya is unmeasured.**
+  - Impact: thresholds are provisional, and RAM fit on a 5.7 GB host is unknown.
+  - Evidence: `docs/LAYA.md` "NOT YET MEASURED".
+  - Blocks release: no; the app degrades to deterministic mode.
+  - Resolution: needs Docker access in the agent shell (currently permission denied).
 - **`docker-compose.yml`, `Dockerfile` and `.github/workflows/ci.yml` from the original commit are broken** (Node 14, missing repo name in the image tag, deprecated actions).
   - Blocks release: yes.
   - Resolution: M7.
 
 ## 7. Next Actions
-1. M4: Laya client, question catalog and fallback (mocked tests).
-2. M4: measure the real model (needs Docker).
-3. M5: skills, learning path, comparison.
+1. M5: skills, learning path, comparison.
+2. M6: UI.
+3. M4 follow-up: measure the real model and run the eval (needs Docker).

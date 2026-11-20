@@ -30,7 +30,7 @@ Check `status`:
 |---|---|
 | `verified` | An observed fact (a field GitHub reports, a file name found). |
 | `rule` | A deterministic heuristic (keyword and threshold rules). Also used for "not found" results, which are limited to what was inspected. |
-| `model` | A Laya prediction. Reserved for a later milestone; no check uses it yet. |
+| `model` | A Laya prediction. Only `laya-readme-sufficiency` uses it. It is never a verified fact and its evidence always says "prediction". |
 | `unknown` | The data is unavailable. `points` is null and the check is excluded from every total. |
 
 ## Formulas
@@ -68,7 +68,7 @@ structure 20.
 **Forks are not scored** (`score` null, label Insufficient evidence, with a note), because their
 content mostly reflects the upstream repository.
 
-### Documentation (35), 18 points
+### Documentation (35), 18 points plus 2 from the model check
 
 README state: *present*, *absent* (GitHub confirmed there is none) or *unknown* (the request
 failed). When the README is unknown, every check that needs it is unknown. When it is absent, the
@@ -84,6 +84,31 @@ README checks score 0 as a verified negative.
 | `configuration` | 1 | A config/environment/options/settings section, or a `.env` mention: 1. |
 | `contributing` | 1 | A contributing heading, a link to CONTRIBUTING, or a `CONTRIBUTING*` file at the root: 1. |
 | `docs-reference` | 1 | A `docs`/`doc`/`documentation` directory, `mkdocs.yml` or `docusaurus.config.*` at the root, a README heading about API/reference/documentation/docs, or a link to a docs site: 1. |
+| `laya-readme-sufficiency` (model) | 2 | Added after the deterministic scoring by `applyLayaAssessment` (`lib/analysis/layaAssessment.js`). A confident Laya prediction that the README explains the purpose and how to get started: 2. A confident prediction that it does not: 0. Otherwise unknown. Not added at all when Laya is disabled by configuration (a deployment choice, not missing evidence). |
+
+#### The model check
+
+The Laya question `readme_sufficient` (see `docs/LAYA.md`) is asked about the cleaned README text.
+Its answer enters the score only when it is **confident**, that is when the probability of the
+reported answer is at least the question's threshold (0.80, provisional) and the server did not
+abstain. The check then has status `model` and evidence such as `Laya model prediction (english
+checkpoint, p=0.91): README explains the purpose and how to get started`.
+
+In every other case the check is **unknown** and excluded from every total, so the scores equal the
+deterministic scores. The evidence says why:
+
+| Situation | Evidence |
+|---|---|
+| Uncertain answer | `Laya uncertain (p=0.62 < 0.80); the prediction is not used` (`abstained` instead of `uncertain` when the server abstained) |
+| Laya is not configured, or the result was not computed | `Laya is not enabled on this server` |
+| The server failed, timed out or sent an invalid response | `Laya unavailable` |
+| The repository has no README text to assess | `no README text was available for Laya to assess` |
+
+An unknown model check only lowers coverage: with Laya off, the documentation coverage is 18/20 and
+the overall coverage drops by 3.5 points. It never lowers a score. Forks are not scored, so they get
+no model check. The model check does not replace the deterministic README checks. The other README
+answers of the model (installation clarity, usage examples, documentation completeness) appear in
+the `laya` part of the API response as evidence only and never change a score.
 
 Keyword rules (English and Persian):
 
@@ -164,7 +189,14 @@ GitHub's license detection, this one is the presence of a license file at the ro
   only counts when the metadata points the same way, except dedicated files such as `*.tf`,
   `openapi.yaml`, dotfiles or `next.config.*`. `strong` = at least two signals and a lead of at
   least one over the runner-up; `weak` = anything else with a signal (ties go to a fixed priority
-  order and are reported as weak); `none` = no signal. It is a hint that Laya refines later.
+  order and are reported as weak); `none` = no signal. It is a hint that Laya can refine.
+- `archetype` (added by `applyLayaAssessment`): `{ ...archetypeHint, source: 'rule' }` by default.
+  When the rules found `none` or `weak` evidence and Laya's `archetype` answer is confident
+  (probability at least 0.50, provisional), it is `{ archetype, confidence: 'model', source:
+  'model', signals, scores, ruleArchetype, ruleConfidence, model, answerConfidence, threshold }`:
+  the model's category, with the rule signals kept for traceability. A `strong` rule-based
+  archetype is never replaced, and an uncertain or missing model answer leaves the rule-based one in
+  place. The archetype does not affect any score.
 - `facts`: the README facts (`lib/analysis/readmeChecks.js`) and the file flags
   (`lib/analysis/structureChecks.js`) the checks were derived from, for later reuse. The README
   text itself is never part of the result.
@@ -220,9 +252,12 @@ only the most recently pushed ones were scored.
 
 - `/api/profile/[user]` returns `profileReadme` (`{ available }` or null when unknown) and
   `profileScore`.
-- `/api/repos/[user]/[repo]/analysis` returns `{ evidenceMeta, analysis }`. `evidenceMeta` has
-  `fetchedAt`, `cached`, `stale`, `unavailable` and `readmeTruncated`. The raw `/evidence` route
-  is unchanged.
+- `/api/repos/[user]/[repo]/analysis` returns `{ evidenceMeta, analysis, laya }`. `evidenceMeta`
+  has `fetchedAt`, `cached`, `stale`, `unavailable` and `readmeTruncated`. `analysis` is the
+  deterministic result with the model check and `archetype` applied. `laya` is
+  `{ status, model, answers, error? }` with `status` one of `ok`, `partial`, `unavailable`,
+  `disabled` or `skipped` (forks); the response is a normal 200 in every case. The raw `/evidence`
+  route is unchanged.
 - The clock is injected (`now`); the routes pass `Date.now()`.
 
 ## Known limitations
@@ -241,3 +276,4 @@ only the most recently pushed ones were scored.
 | Version | Change |
 |---|---|
 | 1 (initial) | Repository: documentation 35, metadata 20, maintenance 25, structure 20. Profile: identity 30, presentation 40, maintenance 30. Check maxima as listed above. Weights come from the project's initial scoring framework and have not yet been tuned against labeled examples. |
+| 2 | Documentation gains one model check, `laya-readme-sufficiency` (max 2, so 20 points with it). Dimension weights are unchanged. The check is unknown (excluded) unless the Laya prediction is confident, and absent when Laya is disabled. The 0.80 threshold is provisional until `scripts/eval-laya.mjs` has been run. |
