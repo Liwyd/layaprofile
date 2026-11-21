@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M10 — Persian SRS
-- Overall completion estimate: ~92%
+- Current milestone: Release verification (owner access needed)
+- Overall completion estimate: ~95%. All mandatory features are implemented; Docker and CI publishing are unverified.
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -96,9 +96,15 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M10 — Persian SRS.
-- Fill in the `~/Downloads/SRS/main.tex` xepersian template for LayaProfile (BRD + SRS, FR/NFR IDs, traceability).
-- Store it in `docs/srs/`; compile it if a TeX toolchain is available.
+Release verification. It is blocked on owner access.
+1. Push the commits. The current credential (`thugbit`) gets a 403.
+2. Docker access for the agent, or the owner runs it:
+   - `docker compose -f docker-compose.yml -f docker-compose.build.yml up --build`
+   - check `/api/health`
+   - measure Laya RAM and latency
+   - run `scripts/eval-laya.mjs`, then set the thresholds in `docs/LAYA.md`
+3. Confirm the first CI run publishes the images. GitHub Actions billing must be enabled.
+4. Compile the SRS with XeLaTeX (no TeX toolchain on this host).
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -173,6 +179,12 @@ M10 — Persian SRS.
 - Inter OFL license added.
 - `og.png` regenerated.
 
+**M10 Persian SRS.**
+- `docs/srs/main.tex`, built from the template: BRD + SRS, 52 FRs, 47 NFRs, traceability to files and tests, unmeasured targets marked as such.
+- Structure checked by script.
+- Not compiled (no TeX here).
+- The template font is kept out of git (license unverified).
+
 ## 6. Known Issues and Technical Debt
 - **`npm start` warns that `next start` is unsupported with `output: standalone`.**
   - It still serves.
@@ -198,6 +210,6 @@ M10 — Persian SRS.
   - Resolution: owner credentials.
 
 ## 7. Next Actions
-1. M10: Persian SRS.
-2. Owner: grant push access and Docker access.
+1. Owner: grant push access and Docker access.
+2. Compile the SRS.
 3. Real `docker build`, compose up, Laya measurement and the eval (`scripts/eval-laya.mjs`); then update docs/LAYA.md and the thresholds.

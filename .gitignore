@@ -25,3 +25,6 @@ yarn-error.log*
 # Python
 __pycache__
 .venv
+
+# SRS font: copy it from the original template locally (license unverified, not redistributed)
+/docs/srs/*.ttf
