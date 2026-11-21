@@ -1,8 +1,10 @@
 name: CI
 
-# Every push, tag and pull request is verified (lint, formatting, tests, production build) and both
-# Docker images are built. Images are published to Docker Hub only for pushes and manual runs, and
-# only after verification succeeded. Pull requests build but never push. See docs/DEPLOYMENT.md.
+# Every push, tag and pull request is verified (lint, formatting, unit tests, production build),
+# exercised end to end in a browser against mock GitHub and Laya servers, and both Docker images
+# are built. Images are published to Docker Hub only for pushes and manual runs, and only after
+# verification and the end-to-end tests succeeded. Pull requests build but never push. See
+# docs/DEPLOYMENT.md and docs/TESTING.md.
 #
 # Repository settings used here (nothing is hard-coded):
 #   secrets   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN   Docker Hub login (never printed)
@@ -60,9 +62,51 @@ jobs:
       - name: Build
         run: npm run build
 
+  e2e:
+    name: End-to-end tests
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The tests run against the production build, started as the Docker image starts it.
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
   docker:
     name: Docker image (${{ matrix.image }})
-    needs: verify
+    needs: [verify, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     # Publishing never overlaps for the same image and ref, and a running publish is never

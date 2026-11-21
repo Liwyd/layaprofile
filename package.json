@@ -14,7 +14,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "pretest:e2e": "node e2e/ensure-build.mjs"
   },
   "dependencies": {
     "chart.js": "^4.6.1",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
+    "@playwright/test": "1.65.1",
     "eslint": "^9.39.5",
     "eslint-config-next": "^15.5.29",
     "eslint-config-prettier": "^10.1.8",

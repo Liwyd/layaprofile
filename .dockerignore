@@ -26,6 +26,8 @@ coverage
 test-results
 playwright-report
 eval
+e2e
+playwright.config.mjs
 **/*.test.js
 **/*.test.mjs
 vitest.config.mjs

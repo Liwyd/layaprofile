@@ -1,0 +1,60 @@
+{
+  "alice/web-dashboard": [
+    ".github/",
+    "docs/",
+    "public/",
+    "src/",
+    "tests/",
+    ".env.example",
+    ".gitignore",
+    "CONTRIBUTING.md",
+    "Dockerfile",
+    "LICENSE",
+    "README.md",
+    "package-lock.json",
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts"
+  ],
+  "alice/gateway-api": [
+    ".github/",
+    "cmd/",
+    "docs/",
+    "internal/",
+    "tests/",
+    ".gitignore",
+    "Dockerfile",
+    "LICENSE",
+    "Makefile",
+    "README.md",
+    "go.mod",
+    "go.sum"
+  ],
+  "alice/design-tokens": [
+    ".github/",
+    "src/",
+    "tests/",
+    ".gitignore",
+    "LICENSE",
+    "README.md",
+    "package.json",
+    "tsconfig.json"
+  ],
+  "alice/infra-playbooks": [
+    ".github/",
+    "modules/",
+    "docs/",
+    ".gitignore",
+    "LICENSE",
+    "README.md",
+    "docker-compose.yml",
+    "main.tf"
+  ],
+  "alice/cli-notes": ["cmd/", "internal/", "LICENSE", "Makefile", "README.md", "go.mod", "main.go"],
+  "alice/legacy-scripts": ["backup.sh", "deploy.sh", "notes.txt"],
+  "alice/old-notes": ["week1.py", "week2.py"],
+  "alice/alice": ["README.md"],
+  "bob/housing-prices": ["data/", "notebook.ipynb"],
+  "bob/etl-scripts": ["etl.py", "requirements.txt"],
+  "bob/kaggle-titanic": ["titanic.ipynb"]
+}

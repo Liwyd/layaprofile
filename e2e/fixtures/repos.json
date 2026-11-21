@@ -1,0 +1,120 @@
+{
+  "alice": [
+    {
+      "name": "web-dashboard",
+      "description": "Real-time metrics dashboard built with React and TypeScript.",
+      "language": "TypeScript",
+      "topics": ["react", "typescript", "dashboard", "vite"],
+      "stargazers_count": 214,
+      "forks_count": 31,
+      "open_issues_count": 4,
+      "license": "MIT",
+      "homepage": "https://dashboard.alice.example.dev",
+      "created_at": "~700d",
+      "pushed_at": "~3d"
+    },
+    {
+      "name": "gateway-api",
+      "description": "HTTP API gateway with rate limiting and JWT authentication, written in Go.",
+      "language": "Go",
+      "topics": ["go", "api", "rest", "docker", "postgresql"],
+      "stargazers_count": 96,
+      "forks_count": 12,
+      "open_issues_count": 2,
+      "license": "Apache-2.0",
+      "created_at": "~520d",
+      "pushed_at": "~9d"
+    },
+    {
+      "name": "design-tokens",
+      "description": "Design tokens and a small React component library.",
+      "language": "TypeScript",
+      "topics": ["design-system", "css", "react"],
+      "stargazers_count": 41,
+      "forks_count": 5,
+      "license": "MIT",
+      "created_at": "~400d",
+      "pushed_at": "~20d"
+    },
+    {
+      "name": "infra-playbooks",
+      "description": "Terraform modules and Docker setups for small production deployments.",
+      "language": "HCL",
+      "topics": ["terraform", "docker", "devops"],
+      "stargazers_count": 12,
+      "forks_count": 2,
+      "license": "MIT",
+      "created_at": "~330d",
+      "pushed_at": "~45d"
+    },
+    {
+      "name": "cli-notes",
+      "description": "A fast command-line note taker.",
+      "language": "Go",
+      "topics": ["cli", "go"],
+      "stargazers_count": 58,
+      "forks_count": 6,
+      "license": "MIT",
+      "created_at": "~800d",
+      "pushed_at": "~70d"
+    },
+    {
+      "name": "legacy-scripts",
+      "description": null,
+      "language": "Shell",
+      "stargazers_count": 1,
+      "created_at": "~1500d",
+      "pushed_at": "~900d"
+    },
+    {
+      "name": "old-notes",
+      "description": "Course notes.",
+      "language": "Python",
+      "stargazers_count": 0,
+      "created_at": "~1800d",
+      "pushed_at": "~1100d"
+    },
+    {
+      "name": "alice",
+      "description": "Profile README",
+      "language": null,
+      "created_at": "~2000d",
+      "pushed_at": "~400d"
+    },
+    {
+      "name": "awesome-go-fork",
+      "description": "A curated list of Go frameworks, libraries and software.",
+      "fork": true,
+      "language": null,
+      "stargazers_count": 0,
+      "created_at": "~600d",
+      "pushed_at": "~30d"
+    }
+  ],
+  "bob": [
+    {
+      "name": "housing-prices",
+      "description": "House price regression with scikit-learn.",
+      "language": "Jupyter Notebook",
+      "stargazers_count": 2,
+      "created_at": "~500d",
+      "pushed_at": "~200d"
+    },
+    {
+      "name": "etl-scripts",
+      "description": "ETL for CSV files.",
+      "language": "Python",
+      "topics": ["etl", "pandas"],
+      "stargazers_count": 1,
+      "created_at": "~700d",
+      "pushed_at": "~400d"
+    },
+    {
+      "name": "kaggle-titanic",
+      "description": null,
+      "language": "Jupyter Notebook",
+      "created_at": "~900d",
+      "pushed_at": "~700d"
+    }
+  ]
+}

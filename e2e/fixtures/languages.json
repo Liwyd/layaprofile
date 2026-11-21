@@ -1,0 +1,4 @@
+{
+  "alice/web-dashboard": { "TypeScript": 48210, "CSS": 6120, "HTML": 940 },
+  "alice/gateway-api": { "Go": 63400, "Dockerfile": 410, "Makefile": 380 }
+}

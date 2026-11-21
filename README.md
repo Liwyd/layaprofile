@@ -43,3 +43,4 @@ Requires Node.js 20 or newer (`.nvmrc` pins 22).
 | `npm run format`     | Format the source with Prettier          |
 | `npm test`           | Run the unit tests once (Vitest)         |
 | `npm run test:watch` | Run the unit tests in watch mode         |
+| `npm run test:e2e`   | Run the end-to-end tests (Playwright)    |

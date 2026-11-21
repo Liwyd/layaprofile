@@ -135,7 +135,10 @@ docker build -t layaprofile-laya laya
 run:
 
 1. **verify**: `npm ci`, `npm run lint`, `npx prettier --check .`, `npm test`, `npm run build`.
-2. **docker** (only if verify passed; one job per image): builds the image. The app image is first
+2. **e2e** (only if verify passed): `npm ci`, `npm run build`, install Chromium and run
+   `npm run test:e2e` (see [TESTING.md](TESTING.md)). The Playwright report is uploaded as an
+   artifact when it fails.
+3. **docker** (only if verify and e2e passed; one job per image): builds the image. The app image is first
    started and probed (health status, non-root user, home page, one static script) before anything
    is pushed. Pushes and manual runs then log in to Docker Hub and push; pull requests only build.
 

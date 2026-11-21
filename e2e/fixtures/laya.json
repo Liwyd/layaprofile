@@ -1,0 +1,21 @@
+{
+  "archetypes": {
+    "web-dashboard": "application",
+    "gateway-api": "api-service",
+    "design-tokens": "library",
+    "infra-playbooks": "infrastructure",
+    "cli-notes": "cli-tool",
+    "legacy-scripts": "config-dotfiles",
+    "old-notes": "learning-project",
+    "housing-prices": "learning-project",
+    "etl-scripts": "cli-tool"
+  },
+  "skillCategories": {
+    "web-dashboard": "frontend",
+    "gateway-api": "backend",
+    "design-tokens": "frontend",
+    "infra-playbooks": "devops-infrastructure",
+    "housing-prices": "machine-learning",
+    "etl-scripts": "data-engineering"
+  }
+}

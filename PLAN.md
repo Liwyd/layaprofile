@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M8 — E2E tests
-- Overall completion estimate: ~80%
+- Current milestone: M9 — Documentation
+- Overall completion estimate: ~87%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -96,9 +96,10 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M8 — Playwright E2E journeys 1–8.
-- Run against `next start` with `GITHUB_API_BASE` and `LAYA_URL` pointed at a local fixture mock server.
-- Include them in CI.
+M9 — Documentation.
+- Rewrite README for LayaProfile: features, architecture, quick start (dev and Docker), configuration, docs index, limitations.
+- Keep the OctoProfile attribution and MIT notice.
+- Final PLAN state with known limitations.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -160,6 +161,12 @@ M8 — Playwright E2E journeys 1–8.
 - Validated with actionlint, hadolint, shellcheck, `compose config` and a simulated runtime layout.
 - NOT yet validated: real `docker build` / `docker run` and a real CI run.
 
+**M8 E2E.**
+- Playwright (`@playwright/test` 1.65.1) against the standalone server and a dependency-free GitHub+Laya mock server (`e2e/mock-server.mjs`, with Laya ok/fail/down control).
+- 27 tests covering journeys 1–8, keyboard checks, and a mobile subset.
+- CI `e2e` job gates the docker publish.
+- `docs/TESTING.md`.
+
 ## 6. Known Issues and Technical Debt
 - **`npm start` warns that `next start` is unsupported with `output: standalone`.**
   - It still serves.
@@ -180,7 +187,7 @@ M8 — Playwright E2E journeys 1–8.
   - Resolution: owner credentials.
 
 ## 7. Next Actions
-1. M8: Playwright E2E with a mock server.
-2. M9: README and final docs.
-3. M10: Persian SRS.
+1. M9: README and final docs.
+2. M10: Persian SRS.
+3. Owner: push access and Docker access, then the real Docker build and Laya measurement.
 3. M4 follow-up: measure the real model and run the eval (needs Docker).
