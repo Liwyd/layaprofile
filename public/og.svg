@@ -1,13 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="LayaProfile: local intelligence for GitHub profiles and repositories.">
   <!-- Source of public/og.png (1200x630). To rebuild the PNG, open this file in headless Chrome
-       (window size 1200x630, file access from files allowed) and take a screenshot. The font
-       files come from public/assets/fonts and are only used when the SVG is opened directly. -->
+       (window size 1200x630, file access from files allowed) and take a screenshot. Inter comes
+       from public/assets/fonts; monospace text uses the platform's own font. -->
   <style>
     @font-face { font-family: 'Inter'; font-weight: 700; src: url('assets/fonts/Inter/Inter-Bold.woff2') format('woff2'); }
     @font-face { font-family: 'Inter'; font-weight: 400; src: url('assets/fonts/Inter/Inter-Regular.woff2') format('woff2'); }
-    @font-face { font-family: 'SF Mono'; font-weight: 500; src: url('assets/fonts/SFMono/SFMono-Medium.woff2') format('woff2'); }
     .sans { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
-    .mono { font-family: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 500; }
+    .mono { font-family: ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, 'Cascadia Mono', 'DejaVu Sans Mono', 'Liberation Mono', Consolas, monospace; font-weight: 500; }
   </style>
   <rect width="1200" height="630" fill="#f4f1ea"/>
 

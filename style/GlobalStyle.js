@@ -2,6 +2,8 @@ import { createGlobalStyle } from 'styled-components';
 import theme from './theme';
 const { fonts, transition } = theme;
 
+// Only Inter is bundled (SIL OFL 1.1, license in public/assets/fonts/Inter). Monospace text uses
+// the platform's own font (theme.fonts.mono): no non-redistributable font ships with the app.
 // Only the weights the interface uses are declared. Browsers fetch a face when it is first used.
 const face = (family, directory, file, weight) => `
   @font-face {
@@ -17,9 +19,6 @@ const fontFaces = [
   face('Inter', 'Inter', 'Inter-Medium', 500),
   face('Inter', 'Inter', 'Inter-SemiBold', 600),
   face('Inter', 'Inter', 'Inter-Bold', 700),
-  face('SF Mono', 'SFMono', 'SFMono-Regular', 400),
-  face('SF Mono', 'SFMono', 'SFMono-Medium', 500),
-  face('SF Mono', 'SFMono', 'SFMono-Semibold', 600),
 ].join('\n');
 
 // Contrast checked against WCAG 2.1 AA (4.5:1 for text):

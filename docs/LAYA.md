@@ -75,7 +75,7 @@ instead of the state on the English checkpoint, and recommends neutral keys as t
 | `usage_examples` | choice | A yes, B no | README | 0.80 | Evidence only |
 | `docs_completeness` | score | 0 minimal, 1 basic, 2 comprehensive | README | 0.60 | Evidence only |
 | `archetype` | choice | library, framework, application, cli-tool, api-service, infrastructure, learning-project, documentation, config-dotfiles | Summary | 0.50 | Archetype when the rules found none or weak evidence |
-| `skill_category` | choice | backend, frontend, systems, devops-infrastructure, data-engineering, mobile, embedded, machine-learning, other | Summary | 0.50 | Not used yet (skill evidence map, M5) |
+| `skill_category` | choice | backend, frontend, systems, devops-infrastructure, data-engineering, mobile, embedded, machine-learning, other | Summary | 0.50 | Not asked by any route yet; `buildSkillEvidence` accepts its confident answers (`docs/SKILLS.md`) |
 
 A `score` answer is the expected level; it is rounded to the nearest level. Every question's input,
 options, criteria, threshold, output interpretation and fallback are documented next to its

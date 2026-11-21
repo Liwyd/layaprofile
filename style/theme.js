@@ -18,7 +18,7 @@ const theme = {
 
   fonts: {
     sans: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
-    mono: "'SF Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    mono: "ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, 'Cascadia Mono', 'DejaVu Sans Mono', 'Liberation Mono', Consolas, monospace",
   },
 
   layout: {

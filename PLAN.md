@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M9 — Documentation
-- Overall completion estimate: ~87%
+- Current milestone: M10 — Persian SRS
+- Overall completion estimate: ~92%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -24,7 +24,7 @@
 - Bounded in-memory LRU+TTL cache that uses ETag, with `fetchedAt`/`cached`/`stale` flags on responses.
 - Typed rate-limit errors, and a per-IP token bucket on our own routes.
 - READMEs are fetched only for analyzed repos, with a size cap. Repository trees are top level only.
-- The contribution calendar is shown only when a token is configured (GraphQL). It is never fabricated.
+- No contribution calendar or commit history: it would need GraphQL with a token. Activity is shown as repository creation and last-push years, labelled as such. Nothing is fabricated.
 - Trade-off: no persistence across restarts. That is acceptable, so there is no database or Redis.
 - Status: done (M2). Deviations: the stale fallback also covers rate limits and other non-404 upstream errors. Pagination builds `&page=N` itself and does not follow `Link` URLs. Confirmed-absent README/tree/release are cached as `null`. Singletons live on `globalThis`.
 
@@ -96,10 +96,9 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M9 — Documentation.
-- Rewrite README for LayaProfile: features, architecture, quick start (dev and Docker), configuration, docs index, limitations.
-- Keep the OctoProfile attribution and MIT notice.
-- Final PLAN state with known limitations.
+M10 — Persian SRS.
+- Fill in the `~/Downloads/SRS/main.tex` xepersian template for LayaProfile (BRD + SRS, FR/NFR IDs, traceability).
+- Store it in `docs/srs/`; compile it if a TeX toolchain is available.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -167,6 +166,13 @@ M9 — Documentation.
 - CI `e2e` job gates the docker publish.
 - `docs/TESTING.md`.
 
+**M9 Documentation.**
+- README rewritten: features, principles, architecture, quick starts, config, API, testing, docs index, limitations and credits.
+- Docs checked against the code.
+- The bundled SF Mono (Apple license, not redistributable) is removed. Monospace now uses the system font stack.
+- Inter OFL license added.
+- `og.png` regenerated.
+
 ## 6. Known Issues and Technical Debt
 - **`npm start` warns that `next start` is unsupported with `output: standalone`.**
   - It still serves.
@@ -176,6 +182,11 @@ M9 — Documentation.
   - Evidence: `docs/LAYA.md` "NOT YET MEASURED".
   - Blocks release: no; the app degrades to deterministic mode.
   - Resolution: needs Docker access in the agent shell (currently permission denied).
+- **Not implemented (non-blocking limitations):**
+  - contribution calendar and commit history (needs GraphQL and a token);
+  - manifest/file evidence in the profile-level skill map (the modules support it, but no route feeds repo analyses);
+  - Laya `skill_category` is not asked by any route.
+  - All of these are documented in the README.
 - **Docker images never built for real.**
   - Impact: the Dockerfiles are validated statically only.
   - Evidence: the agent shell gets "permission denied" on the docker socket.
@@ -187,7 +198,6 @@ M9 — Documentation.
   - Resolution: owner credentials.
 
 ## 7. Next Actions
-1. M9: README and final docs.
-2. M10: Persian SRS.
-3. Owner: push access and Docker access, then the real Docker build and Laya measurement.
-3. M4 follow-up: measure the real model and run the eval (needs Docker).
+1. M10: Persian SRS.
+2. Owner: grant push access and Docker access.
+3. Real `docker build`, compose up, Laya measurement and the eval (`scripts/eval-laya.mjs`); then update docs/LAYA.md and the thresholds.
