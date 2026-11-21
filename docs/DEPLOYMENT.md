@@ -93,6 +93,30 @@ Compose has no way to switch a default service off, so Laya is a profile switche
 rather than a service that is always on. One line in `.env` turns it on or off, and the app does not
 care which.
 
+## Vercel (public demo, Laya off)
+
+A Laya-less demo runs on Vercel at https://layaprofile.vercel.app. It is an extra deployment next
+to the Docker one, not a replacement: Vercel cannot run the Laya Python sidecar, so the analysis
+there is deterministic only and `/api/health` reports `laya.status: "disabled"`.
+
+Setup (Vercel CLI, run from the repository root):
+
+1. `vercel login`, then `vercel link --yes --project layaprofile`. Vercel detects Next.js; no
+   `vercel.json` is needed. `.vercel/` and `.env.local` stay out of git.
+2. Environment variables (Production):
+   - `TRUST_PROXY=1`. Every request reaches the app through Vercel's proxy, which sets
+     `X-Forwarded-For` itself. Without this flag the per-IP limiter would share one bucket between
+     all visitors.
+   - `GITHUB_TOKEN` (optional, no scopes). Without it the whole deployment shares GitHub's 60
+     requests/hour. Add it with `vercel env add GITHUB_TOKEN production`, which prompts for the value.
+   - Leave `LAYA_URL` unset, which disables Laya.
+3. `vercel deploy --prod`.
+
+Limits on Vercel: functions are serverless, so the in-memory GitHub cache and the rate-limiter
+buckets live only as long as a warm instance and are not shared between instances. Expect more
+GitHub requests than on a single Docker host. Pushes do not redeploy automatically until the GitHub
+repository is connected (`vercel git connect`, which needs the Vercel GitHub app on the repository).
+
 ## Resource expectations
 
 **Not measured yet.** No memory, CPU, cold-start or latency figure for Laya has been measured in this

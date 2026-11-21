@@ -6,6 +6,7 @@
 - Overall completion estimate: ~95%. All mandatory features are implemented; Docker and CI publishing are unverified.
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
+- Public demo: https://layaprofile.vercel.app (Vercel, Laya disabled; see docs/DEPLOYMENT.md). Verified 2026-11-21: pages, profile/compare/analysis APIs, 404/400 errors, CSP headers.
 
 ### Host constraints (dev machine)
 2 CPU cores, ~5.7 GB RAM (often <2 GB free), no GPU. Run only one memory-heavy job at a time (Docker build, model load, `next build`). Always cap container memory. A previous session froze the host by running a Laya model load in parallel with an npm build.
@@ -97,7 +98,7 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
 
 ## 4. Current Task
 Release verification. It is blocked on owner access.
-1. Push the commits. The current credential (`thugbit`) gets a 403.
+1. Push: resolved. `origin/main` matched local `main` on 2026-11-21.
 2. Docker access for the agent, or the owner runs it:
    - `docker compose -f docker-compose.yml -f docker-compose.build.yml up --build`
    - check `/api/health`
@@ -204,12 +205,15 @@ Release verification. It is blocked on owner access.
   - Evidence: the agent shell gets "permission denied" on the docker socket.
   - Blocks release: yes (project completion requires a working Docker deployment).
   - Resolution: build once Docker access is granted, or let CI build after a push.
-- **Push blocked.**
-  - Evidence: `git push` returns 403 for user `thugbit` on `Liwyd/layaprofile`.
-  - Blocks release: yes (the CI publish needs the commits on GitHub).
-  - Resolution: owner credentials.
+- **No CI runs on GitHub.**
+  - Evidence: `gh run list` returned nothing on 2026-11-21, so no images are on Docker Hub yet.
+  - Blocks release: yes (project completion requires CI publishing).
+  - Resolution: owner enables GitHub Actions for the repository.
+- **Vercel demo does not auto-deploy.**
+  - Evidence: `vercel link` could not connect `Liwyd/layaprofile` (Vercel GitHub app not installed).
+  - Blocks release: no; redeploy with `vercel deploy --prod`.
 
 ## 7. Next Actions
-1. Owner: grant push access and Docker access.
+1. Owner: grant Docker access and enable GitHub Actions.
 2. Compile the SRS.
 3. Real `docker build`, compose up, Laya measurement and the eval (`scripts/eval-laya.mjs`); then update docs/LAYA.md and the thresholds.

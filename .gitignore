@@ -28,3 +28,4 @@ __pycache__
 
 # SRS font: copy it from the original template locally (license unverified, not redistributed)
 /docs/srs/*.ttf
+.vercel
