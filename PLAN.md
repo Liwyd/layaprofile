@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M6 — UI
-- Overall completion estimate: ~55%
+- Current milestone: M6b — compare page and share card
+- Overall completion estimate: ~65%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -96,12 +96,12 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M6 — UI.
-- Editorial design system.
-- `/user/[id]` report sections: overview, stats, profile score and checklist, repositories with on-demand quality analysis, skill evidence explorer, learning path with a role selector, share card.
-- `/compare/[a]/[b]` difference view.
-- Designed loading, empty, partial and error states.
-- Responsive and accessible.
+M6b.
+- `/compare/[a]/[b]` difference view, reusing `components/ui`.
+- Profile share card.
+- Replace the OctoProfile `public/og.png`.
+- Add `.ico` and apple-touch icons.
+- Acceptance: lint, tests and build pass; screenshots checked at 1280 and 390 px.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -139,7 +139,18 @@ M6 — UI.
 - 750 tests.
 - Laya `skill_category` is wired in the model but not yet asked by any route.
 
+**M6a Design system and report.**
+- Editorial design system via CSS variables, with automatic dark mode.
+- Home page with search and a compare form.
+- `/user/[id]` report with six numbered sections: on-demand repo analysis plus "Analyze top 5" (at most 2 concurrent), skill evidence explorer, role-based learning path, and sticky section nav.
+- Old OctoProfile components removed; attribution kept in the footer.
+- `lib/ui` helpers tested; 825 tests.
+- Checked in headless Chrome at 1280/390 px, light and dark.
+
 ## 6. Known Issues and Technical Debt
+- **`npm start` warns that `next start` is unsupported with `output: standalone`.**
+  - It still serves.
+  - Resolution: M7 runs `node .next/standalone/server.js` in Docker.
 - **Laya is unmeasured.**
   - Impact: thresholds are provisional, and RAM fit on a 5.7 GB host is unknown.
   - Evidence: `docs/LAYA.md` "NOT YET MEASURED".
@@ -150,6 +161,6 @@ M6 — UI.
   - Resolution: M7.
 
 ## 7. Next Actions
-1. M6: design system and report page.
-2. M6: compare page.
+1. M6b: compare page and share card.
+2. M7: Docker and CI/CD.
 3. M4 follow-up: measure the real model and run the eval (needs Docker).
