@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M7 — Docker and CI/CD
-- Overall completion estimate: ~72%
+- Current milestone: M8 — E2E tests
+- Overall completion estimate: ~80%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -96,14 +96,9 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M7 — Docker and CI/CD.
-- App image: multi-stage, standalone `server.js`, non-root, healthcheck.
-- `.dockerignore`.
-- Compose with published images, a Laya volume and memory limits.
-- `.env.example`, including `NEXT_PUBLIC_SITE_URL` for absolute OG URLs.
-- GitHub Actions: lint → test → build → docker build, then push with tags and a concurrency group.
-- `scripts/deploy.sh`.
-- Docker builds cannot be validated until the agent shell has Docker access.
+M8 — Playwright E2E journeys 1–8.
+- Run against `next start` with `GITHUB_API_BASE` and `LAYA_URL` pointed at a local fixture mock server.
+- Include them in CI.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -156,6 +151,15 @@ M7 — Docker and CI/CD.
 - GitHub errors are recognised by brand rather than `instanceof` (fixes 500s in `next dev`).
 - 901 tests.
 
+**M7 Docker and CI/CD.**
+- App image: alpine, multi-stage, standalone, non-root, node-fetch healthcheck.
+- Laya sidecar image with no weights and an HF cache volume.
+- `docker-compose.yml` uses published images only, with Laya enabled through `COMPOSE_PROFILES=laya` and memory limits; `docker-compose.build.yml` is for local builds.
+- CI: verify job, then a docker matrix with a smoke test, then a push on non-PR runs. Tags are `latest` (default branch only), `sha-*`, semver and branch, with publish concurrency groups.
+- `scripts/deploy.sh` (pull, up, wait for health; never rebuilds) and `docs/DEPLOYMENT.md`.
+- Validated with actionlint, hadolint, shellcheck, `compose config` and a simulated runtime layout.
+- NOT yet validated: real `docker build` / `docker run` and a real CI run.
+
 ## 6. Known Issues and Technical Debt
 - **`npm start` warns that `next start` is unsupported with `output: standalone`.**
   - It still serves.
@@ -165,11 +169,18 @@ M7 — Docker and CI/CD.
   - Evidence: `docs/LAYA.md` "NOT YET MEASURED".
   - Blocks release: no; the app degrades to deterministic mode.
   - Resolution: needs Docker access in the agent shell (currently permission denied).
-- **`docker-compose.yml`, `Dockerfile` and `.github/workflows/ci.yml` from the original commit are broken** (Node 14, missing repo name in the image tag, deprecated actions).
-  - Blocks release: yes.
-  - Resolution: M7.
+- **Docker images never built for real.**
+  - Impact: the Dockerfiles are validated statically only.
+  - Evidence: the agent shell gets "permission denied" on the docker socket.
+  - Blocks release: yes (project completion requires a working Docker deployment).
+  - Resolution: build once Docker access is granted, or let CI build after a push.
+- **Push blocked.**
+  - Evidence: `git push` returns 403 for user `thugbit` on `Liwyd/layaprofile`.
+  - Blocks release: yes (the CI publish needs the commits on GitHub).
+  - Resolution: owner credentials.
 
 ## 7. Next Actions
-1. M7: Dockerfiles, compose, CI workflow, deploy script.
-2. M8: Playwright E2E with a mock server.
+1. M8: Playwright E2E with a mock server.
+2. M9: README and final docs.
+3. M10: Persian SRS.
 3. M4 follow-up: measure the real model and run the eval (needs Docker).

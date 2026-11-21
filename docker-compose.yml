@@ -1,15 +1,113 @@
-version: '3.8'
+# LayaProfile deployment file. It runs PUBLISHED images from Docker Hub and never builds: the
+# deployment server pulls what CI published (docs/DEPLOYMENT.md). For local builds add
+# docker-compose.build.yml. Requires Docker Compose v2.20 or newer.
+#
+#   cp .env.example .env        # then edit it (DOCKERHUB_NAMESPACE is required)
+#   docker compose pull && docker compose up -d      # or: scripts/deploy.sh
+#
+# Laya is a Compose profile named "laya". `.env.example` turns it on with COMPOSE_PROFILES=laya,
+# so a normal setup starts both containers; remove that line to run the app alone. Compose has no
+# way to switch a default service off, and a profile gives one switch instead of `--no-deps`
+# workarounds. The app starts without Laya in either case: it only needs `depends_on` to be
+# optional (`required: false`) and treats an unreachable or disabled Laya as "no model
+# assessment", never as an error.
+name: layaprofile
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
 
 services:
-  layaprofile:
-    build: .
-    ports:
-      - "3000:3000"
+  app:
+    image: ${DOCKERHUB_NAMESPACE:?Set DOCKERHUB_NAMESPACE in .env}/layaprofile:${LAYAPROFILE_TAG:-latest}
+    # The whole .env reaches the app: GITHUB_TOKEN, TRUST_PROXY, LAYA_API_KEY, LAYA_TIMEOUT_MS.
+    # Do not put DOCKERHUB_TOKEN in it.
+    env_file: .env
     environment:
-      - NODE_ENV=production
-    restart: always
+      # Wins over .env. Leave LAYA_URL unset to use the sidecar below. An explicitly empty value
+      # (LAYA_URL=) disables Laya in the app.
+      LAYA_URL: ${LAYA_URL-http://laya:8000}
+    ports:
+      # Published on all interfaces unless APP_BIND says otherwise (127.0.0.1 behind a reverse
+      # proxy on the same host). The Laya container is never published.
+      - '${APP_BIND:-0.0.0.0}:${APP_PORT:-3000}:3000'
+    depends_on:
+      laya:
+        # Started, not healthy: the first start downloads and loads the model for minutes, and
+        # the app is fully usable meanwhile. required: false allows the profile to be off.
+        condition: service_started
+        required: false
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
       retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Provisional limits: the real memory and CPU use of both containers has not been measured
+    # yet (see docs/DEPLOYMENT.md). Revisit these once it has.
+    mem_limit: 512m
+    cpus: 1.0
+    logging: *default-logging
+
+  laya:
+    image: ${DOCKERHUB_NAMESPACE:?Set DOCKERHUB_NAMESPACE in .env}/layaprofile-laya:${LAYAPROFILE_TAG:-latest}
+    profiles: ['laya']
+    # Explicit variables instead of env_file: the Laya container needs none of the app's secrets.
+    # Blank values mean "server default" (laya-serve ignores blank LAYA_* settings).
+    environment:
+      LAYA_API_KEY: ${LAYA_API_KEY:-}
+      LAYA_DEVICE: ${LAYA_DEVICE:-cpu}
+      LAYA_THREADS: ${LAYA_THREADS:-2}
+      LAYA_MODELS: ${LAYA_MODELS:-english}
+      # 0 on the first start (the checkpoints are downloaded); 1 afterwards to run fully offline.
+      HF_HUB_OFFLINE: ${HF_HUB_OFFLINE:-0}
+    # Not published: only the app, on the compose network, talks to Laya.
+    expose:
+      - '8000'
+    volumes:
+      # HF_HOME of the image. Checkpoints are downloaded once and reused across restarts and
+      # upgrades; they are never part of the image.
+      - laya-hf-cache:/home/laya/.cache/huggingface
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('LAYA_PORT','8000')+'/health',timeout=4)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # Room for the first download plus checkpoint load. Failed checks inside this window do
+      # not count, and the app does not wait for it.
+      start_period: 600s
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Provisional: peak memory of the English checkpoint on CPU has not been measured yet.
+    mem_limit: 3g
+    cpus: 2.0
+    logging: *default-logging
+
+volumes:
+  laya-hf-cache:

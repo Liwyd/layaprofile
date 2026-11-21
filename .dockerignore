@@ -1,0 +1,47 @@
+# Keep the build context small and free of local state, secrets and files the build never reads.
+# Everything below is excluded from the app image context (docker build .). The Laya sidecar is
+# built from its own context (laya/) and has its own .dockerignore.
+
+# Dependencies and build output are produced inside the image.
+node_modules
+.next
+out
+
+# Version control and editor/OS files
+.git
+.gitignore
+.gitattributes
+.github
+.vscode
+.idea
+.editorconfig
+.DS_Store
+
+# Local environment files (the documented example is kept)
+.env*
+!.env.example
+
+# Test, evaluation and tool output
+coverage
+test-results
+playwright-report
+eval
+**/*.test.js
+**/*.test.mjs
+vitest.config.mjs
+*.log
+
+# Not part of the app image
+laya
+scripts
+docs
+*.md
+Dockerfile
+.dockerignore
+docker-compose*.yml
+.prettierignore
+prettier.config.js
+
+# Python scratch files
+__pycache__
+.venv

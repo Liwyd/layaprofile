@@ -1,0 +1,24 @@
+# Local build override: builds both images from this checkout instead of pulling them.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up --build
+#
+# The images keep the names from docker-compose.yml (<DOCKERHUB_NAMESPACE>/layaprofile and
+# <DOCKERHUB_NAMESPACE>/layaprofile-laya, tag LAYAPROFILE_TAG), so use a namespace that cannot be
+# mistaken for the published one, for example DOCKERHUB_NAMESPACE=local, and run `docker compose
+# pull` (or scripts/deploy.sh) afterwards to switch back to the published images. This file is for
+# development machines; the deployment server never builds (docs/DEPLOYMENT.md).
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Inlined into the client bundle at build time (see .env.example).
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+  laya:
+    build:
+      context: ./laya
+      dockerfile: Dockerfile
+      args:
+        # cpu (default) or a CUDA index such as cu126 for a GPU build (docs/DEPLOYMENT.md).
+        TORCH_INDEX: ${TORCH_INDEX:-cpu}

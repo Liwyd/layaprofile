@@ -1,0 +1,4 @@
+# The Laya image is built from this directory and needs only the Dockerfile. Everything else
+# (local virtualenvs, downloaded checkpoints, scratch files) must never enter the build context.
+*
+!Dockerfile

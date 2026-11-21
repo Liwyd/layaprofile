@@ -1,11 +1,19 @@
 # LayaProfile inference sidecar: the official `laya-serve` HTTP server (PyPI `laya[serve]`).
 # CPU torch by default; model weights are NOT baked in — they live in the HF cache volume.
+#
+# Offline operation: the first start downloads the checkpoints into HF_HOME (mount a volume
+# there, see docker-compose.yml). Once they are cached, set HF_HUB_OFFLINE=1 at run time to stop
+# all Hub network access. It is a runtime variable on purpose: the image never sets it, because
+# an offline first start would fail.
 ARG PYTHON_IMAGE=python:3.12-slim
 
 FROM ${PYTHON_IMAGE} AS build
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN python -m venv --upgrade-deps /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+# CPU wheels by default. For an NVIDIA GPU build with a CUDA index that carries TORCH_VERSION,
+# for example --build-arg TORCH_INDEX=cu126 (checked: cu124 has no torch wheels), and run with
+# LAYA_DEVICE=cuda (see docs/DEPLOYMENT.md).
 ARG TORCH_INDEX=cpu
 ARG TORCH_VERSION=2.14.0
 ARG LAYA_VERSION=0.5.0
@@ -34,5 +42,5 @@ COPY --from=build /opt/venv /opt/venv
 USER laya
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=300s --retries=3 \
-  CMD python -c "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('LAYA_PORT','8000')+'/health',timeout=4)" || exit 1
+  CMD ["python", "-c", "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('LAYA_PORT','8000')+'/health',timeout=4)"]
 CMD ["laya-serve"]

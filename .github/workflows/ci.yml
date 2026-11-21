@@ -1,38 +1,184 @@
-name: CI/CD
+name: CI
+
+# Every push, tag and pull request is verified (lint, formatting, tests, production build) and both
+# Docker images are built. Images are published to Docker Hub only for pushes and manual runs, and
+# only after verification succeeded. Pull requests build but never push. See docs/DEPLOYMENT.md.
+#
+# Repository settings used here (nothing is hard-coded):
+#   secrets   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN   Docker Hub login (never printed)
+#   variables DOCKERHUB_NAMESPACE (optional)         namespace for the image names; defaults to
+#                                                    the DOCKERHUB_USERNAME secret
+#             NEXT_PUBLIC_SITE_URL (optional)        public site URL, inlined into the app build
 
 on:
   push:
-    branches: [ master, main ]
+    branches: ['**']
+    tags: ['v*']
   pull_request:
-    branches: [ master, main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to a feature branch or pull request supersedes the running verification. Runs on
+# the default branch and on release tags always finish.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && github.ref_type != 'tag' }}
 
 jobs:
-  build-and-test:
+  verify:
+    name: Lint, test and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js
-        uses: actions/setup-node@v1
+      - name: Check out
+        uses: actions/checkout@v4
         with:
-          node-version: '14.x'
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-      - name: Run tests
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npx prettier --check .
+
+      - name: Test
         run: npm test
-      - name: Build application
+
+      - name: Build
         run: npm run build
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
+
+  docker:
+    name: Docker image (${{ matrix.image }})
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Publishing never overlaps for the same image and ref, and a running publish is never
+    # cancelled, so two runs cannot race to move `latest` (only the default branch writes it).
+    concurrency:
+      group: publish-${{ matrix.image }}-${{ github.ref }}
+      cancel-in-progress: false
+    env:
+      # The fallback only keeps image names valid on pull requests from forks, where secrets are
+      # unavailable and nothing is pushed.
+      DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME || 'layaprofile-ci' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: layaprofile
+            context: .
+            file: ./Dockerfile
+            build_args: NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }}
+          - image: layaprofile-laya
+            context: ./laya
+            file: ./laya/Dockerfile
+            build_args: ''
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Require Docker Hub credentials
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v1
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "::error::The DOCKERHUB_USERNAME and DOCKERHUB_TOKEN repository secrets must be set to publish images."
+            exit 1
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKERHUB_NAMESPACE }}/${{ matrix.image }}
+          # `latest` comes only from the default branch, never from a release tag.
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push Docker image
-        if: github.event_name != 'pull_request'
-        uses: docker/build-push-action@v2
+
+      # The app image is started and probed before anything is pushed: a broken runtime layout
+      # (missing server.js, static files, health endpoint) must never reach `latest`. The Laya
+      # image is only built here; running it needs a model download.
+      - name: Build app image for the smoke test
+        if: matrix.image == 'layaprofile'
+        uses: docker/build-push-action@v6
         with:
-          context: .
-          push: true
-          tags: latest
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          load: true
+          tags: layaprofile-smoke:ci
+          build-args: ${{ matrix.build_args }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+
+      - name: Smoke test app image
+        if: matrix.image == 'layaprofile'
+        run: |
+          docker run -d --name layaprofile-smoke -p 3000:3000 \
+            --health-interval=2s --health-start-period=1s --health-retries=15 \
+            layaprofile-smoke:ci
+          status=starting
+          for _ in $(seq 1 30); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' layaprofile-smoke)
+            if [ "$status" = healthy ]; then break; fi
+            sleep 2
+          done
+          docker logs layaprofile-smoke
+          if [ "$status" != healthy ]; then
+            echo "::error::The app container did not become healthy (last status: $status)."
+            exit 1
+          fi
+          if [ "$(docker exec layaprofile-smoke id -u)" = 0 ]; then
+            echo "::error::The app container runs as root."
+            exit 1
+          fi
+          curl --fail --silent --show-error http://127.0.0.1:3000/ --output page.html
+          asset=$(grep -o '/_next/static/[^"]*\.js' page.html | head -n 1)
+          if [ -z "$asset" ]; then
+            echo "::error::The home page references no static script."
+            exit 1
+          fi
+          curl --fail --silent --show-error "http://127.0.0.1:3000$asset" --output /dev/null
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.build_args }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
