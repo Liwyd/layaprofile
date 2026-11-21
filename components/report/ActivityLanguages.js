@@ -138,6 +138,13 @@ RepoLink.propTypes = { repo: PropTypes.object.isRequired };
 const ActivityLanguages = ({ repos, now }) => {
   const languages = useMemo(() => computeLanguageStats(repos, LANGUAGE_LIMIT), [repos]);
   const histogram = useMemo(() => buildYearHistogram(repos), [repos]);
+  const yearSeries = useMemo(
+    () => [
+      { label: 'Created', data: histogram.created, tone: 'muted' },
+      { label: 'Last pushed', data: histogram.pushed, tone: 'ink' },
+    ],
+    [histogram],
+  );
   const starred = useMemo(() => mostStarred(repos, LIST_LIMIT), [repos]);
   const recent = useMemo(() => recentlyPushed(repos, LIST_LIMIT), [repos]);
   const peak = Math.max(1, ...languages.map(language => language.value));
@@ -187,7 +194,12 @@ const ActivityLanguages = ({ repos, now }) => {
       {histogram.years.length > 0 && (
         <Block>
           <Label>Repositories by year</Label>
-          <YearChart histogram={histogram} />
+          <YearChart
+            years={histogram.years}
+            series={yearSeries}
+            description="Bar chart of own repositories by year of creation and of last push"
+            tableCaption="Own repositories created and last pushed per year"
+          />
           <Caption>
             Based on created_at and pushed_at of public repositories (forks excluded); not commit
             history.

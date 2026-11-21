@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="LayaProfile: local intelligence for GitHub profiles and repositories.">
+  <!-- Source of public/og.png (1200x630). To rebuild the PNG, open this file in headless Chrome
+       (window size 1200x630, file access from files allowed) and take a screenshot. The font
+       files come from public/assets/fonts and are only used when the SVG is opened directly. -->
+  <style>
+    @font-face { font-family: 'Inter'; font-weight: 700; src: url('assets/fonts/Inter/Inter-Bold.woff2') format('woff2'); }
+    @font-face { font-family: 'Inter'; font-weight: 400; src: url('assets/fonts/Inter/Inter-Regular.woff2') format('woff2'); }
+    @font-face { font-family: 'SF Mono'; font-weight: 500; src: url('assets/fonts/SFMono/SFMono-Medium.woff2') format('woff2'); }
+    .sans { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+    .mono { font-family: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 500; }
+  </style>
+  <rect width="1200" height="630" fill="#f4f1ea"/>
+
+  <rect x="72" y="72" width="22" height="22" fill="#b4441c"/>
+  <text class="mono" x="110" y="90" font-size="20" fill="#66655e" letter-spacing="1.4">GITHUB PROFILE INTELLIGENCE</text>
+  <rect x="72" y="118" width="1056" height="2" fill="#1b1b18"/>
+
+  <text class="sans" x="66" y="300" font-size="164" font-weight="700" letter-spacing="-6.5" fill="#1b1b18">LayaProfile</text>
+  <text class="sans" x="72" y="376" font-size="40" font-weight="400" letter-spacing="-0.6" fill="#1b1b18">Local intelligence for GitHub</text>
+  <text class="sans" x="72" y="426" font-size="40" font-weight="400" letter-spacing="-0.6" fill="#1b1b18">profiles and repositories.</text>
+
+  <g>
+    <rect x="72" y="506" width="336" height="2" fill="#1b1b18"/>
+    <rect x="432" y="506" width="336" height="2" fill="#1b1b18"/>
+    <rect x="792" y="506" width="336" height="2" fill="#1b1b18"/>
+    <text class="mono" x="72" y="544" font-size="20" fill="#b4441c" letter-spacing="1.2">01 →</text>
+    <text class="mono" x="432" y="544" font-size="20" fill="#b4441c" letter-spacing="1.2">02 →</text>
+    <text class="mono" x="792" y="544" font-size="20" fill="#b4441c" letter-spacing="1.2">03</text>
+    <text class="sans" x="72" y="582" font-size="26" font-weight="700" fill="#1b1b18" letter-spacing="-0.3">Public GitHub data</text>
+    <text class="sans" x="432" y="582" font-size="26" font-weight="700" fill="#1b1b18" letter-spacing="-0.3">Transparent rules</text>
+    <text class="sans" x="792" y="582" font-size="26" font-weight="700" fill="#1b1b18" letter-spacing="-0.3">Local Laya predictions</text>
+  </g>
+</svg>

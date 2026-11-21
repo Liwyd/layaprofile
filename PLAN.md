@@ -2,8 +2,8 @@
 
 ## 1. Project Status
 - Stage: Implementation
-- Current milestone: M6b — compare page and share card
-- Overall completion estimate: ~65%
+- Current milestone: M7 — Docker and CI/CD
+- Overall completion estimate: ~72%
 - Last verified commit: M1 foundation commit (see git log)
 - Blocking issues: none for code work. Docker access from the agent shell is denied (socket permission). This blocks Laya measurement (M4) and Docker validation (M7) until it is resolved.
 
@@ -96,12 +96,14 @@ Each milestone is implemented in one focused change, verified (`npm run lint && 
   - Persian SRS from the `~/Downloads/SRS` template, filled in for LayaProfile, in `docs/srs/`, compiled to PDF.
 
 ## 4. Current Task
-M6b.
-- `/compare/[a]/[b]` difference view, reusing `components/ui`.
-- Profile share card.
-- Replace the OctoProfile `public/og.png`.
-- Add `.ico` and apple-touch icons.
-- Acceptance: lint, tests and build pass; screenshots checked at 1280 and 390 px.
+M7 — Docker and CI/CD.
+- App image: multi-stage, standalone `server.js`, non-root, healthcheck.
+- `.dockerignore`.
+- Compose with published images, a Laya volume and memory limits.
+- `.env.example`, including `NEXT_PUBLIC_SITE_URL` for absolute OG URLs.
+- GitHub Actions: lint → test → build → docker build, then push with tags and a concurrency group.
+- `scripts/deploy.sh`.
+- Docker builds cannot be validated until the agent shell has Docker access.
 
 ## 5. Completed Work Summary
 **M1 Foundation.**
@@ -147,6 +149,13 @@ M6b.
 - `lib/ui` helpers tested; 825 tests.
 - Checked in headless Chrome at 1280/390 px, light and dark.
 
+**M6b Compare page and share card.**
+- `/compare/[a]/[b]` difference view: neutral paired bars, popularity grouped separately, stacked layout on mobile, error naming the missing side.
+- Canvas share card with PNG download.
+- LayaProfile OG image, favicon.ico and apple-touch icon.
+- GitHub errors are recognised by brand rather than `instanceof` (fixes 500s in `next dev`).
+- 901 tests.
+
 ## 6. Known Issues and Technical Debt
 - **`npm start` warns that `next start` is unsupported with `output: standalone`.**
   - It still serves.
@@ -161,6 +170,6 @@ M6b.
   - Resolution: M7.
 
 ## 7. Next Actions
-1. M6b: compare page and share card.
-2. M7: Docker and CI/CD.
+1. M7: Dockerfiles, compose, CI workflow, deploy script.
+2. M8: Playwright E2E with a mock server.
 3. M4 follow-up: measure the real model and run the eval (needs Docker).

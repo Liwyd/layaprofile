@@ -6,10 +6,11 @@ import ProfileQuality from './ProfileQuality';
 import Repositories from './Repositories';
 import SkillEvidence from './SkillEvidence';
 import LearningPath from './LearningPath';
+import ShareCard from './ShareCard';
 import SectionBoundary from './SectionBoundary';
 
 /**
- * The six report sections for a loaded profile. Each sits in its own boundary, so a section that
+ * The seven report sections for a loaded profile. Each sits in its own boundary, so a section that
  * fails to render or is missing its data shows an inline error and never blanks the page.
  */
 const Report = ({ profile, onReload }) => {
@@ -37,6 +38,9 @@ const Report = ({ profile, onReload }) => {
       </SectionBoundary>
       <SectionBoundary id="learning">
         <LearningPath login={user.login} />
+      </SectionBoundary>
+      <SectionBoundary id="share">
+        <ShareCard profile={profile} now={now} />
       </SectionBoundary>
     </>
   );

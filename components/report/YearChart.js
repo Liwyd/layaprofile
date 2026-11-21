@@ -23,16 +23,22 @@ const readPalette = () => ({
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const buildConfig = ({ years, created, pushed }, palette) => {
+// A series is drawn in ink or in the muted grey: two tones that differ in lightness, so the
+// chart does not rely on hue.
+const TONES = ['ink', 'muted'];
+
+const buildConfig = (years, series, palette) => {
   const mono = { family: fonts.mono.split(',')[0].replace(/'/g, ''), size: 11 };
   return {
     type: 'bar',
     data: {
       labels: years.map(String),
-      datasets: [
-        { label: 'Created', data: created, backgroundColor: palette.muted, borderWidth: 0 },
-        { label: 'Last pushed', data: pushed, backgroundColor: palette.ink, borderWidth: 0 },
-      ],
+      datasets: series.map(item => ({
+        label: item.label,
+        data: item.data,
+        backgroundColor: palette[item.tone],
+        borderWidth: 0,
+      })),
     },
     options: {
       responsive: true,
@@ -84,12 +90,12 @@ const Figure = styled.figure`
     margin-right: 0.4rem;
   }
 
-  .legend .created::before {
-    background: ${colors.muted};
+  .legend .ink::before {
+    background: ${colors.ink};
   }
 
-  .legend .pushed::before {
-    background: ${colors.ink};
+  .legend .muted::before {
+    background: ${colors.muted};
   }
 
   .canvas {
@@ -110,19 +116,19 @@ const Figure = styled.figure`
   table {
     ${mixins.monoText};
     margin-top: 0.5rem;
-    max-width: 24rem;
     font-size: 0.8125rem;
   }
 
   th,
   td {
-    padding: 0.25rem 0;
+    padding: 0.25rem 0 0.25rem 1.25rem;
     border-bottom: 1px solid ${colors.rule};
     text-align: right;
   }
 
   th:first-child,
   td:first-child {
+    padding-left: 0;
     text-align: left;
   }
 
@@ -133,10 +139,13 @@ const Figure = styled.figure`
 `;
 
 /**
- * Repositories created and last pushed per year, as a minimal bar chart. The same numbers are
- * available as a table, which is the accessible alternative to the canvas.
+ * Repositories per year, as a minimal grouped bar chart of one or more series
+ * (`{ label, data, tone }`, `data` parallel to `years`, `tone` `ink` or `muted`). The same numbers
+ * are available as a table, which is the accessible alternative to the canvas; `tableSeries`
+ * lets the table carry more series than the chart draws. `description` names what is charted for
+ * assistive technology.
  */
-const YearChart = ({ histogram }) => {
+const YearChart = ({ years, series, tableSeries, description, tableCaption }) => {
   const canvas = useRef(null);
   const [scheme, setScheme] = useState(0);
 
@@ -149,43 +158,50 @@ const YearChart = ({ histogram }) => {
 
   useEffect(() => {
     // The chart must be destroyed so React strict mode and re-renders never reuse a live canvas.
-    const chart = new Chart(canvas.current, buildConfig(histogram, readPalette()));
+    const chart = new Chart(canvas.current, buildConfig(years, series, readPalette()));
     return () => chart.destroy();
-  }, [histogram, scheme]);
+  }, [years, series, scheme]);
 
-  const { years, created, pushed } = histogram;
+  const rows = tableSeries ?? series;
   return (
     <Figure>
       <div className="legend" aria-hidden="true">
-        <span className="created">Created</span>
-        <span className="pushed">Last pushed</span>
+        {series.map(item => (
+          <span key={item.label} className={item.tone}>
+            {item.label}
+          </span>
+        ))}
       </div>
       <div className="canvas">
         <canvas
           ref={canvas}
           role="img"
-          aria-label={`Bar chart of own repositories by year of creation and of last push, ${years[0]} to ${years[years.length - 1]}. The same numbers are in the table below.`}
+          aria-label={`${description}, ${years[0]} to ${years[years.length - 1]}. The same numbers are in the table below.`}
         />
       </div>
       <Disclosure>
         <summary>View as table</summary>
         <table>
           <caption>
-            <VisuallyHidden>Own repositories created and last pushed per year</VisuallyHidden>
+            <VisuallyHidden>{tableCaption}</VisuallyHidden>
           </caption>
           <thead>
             <tr>
               <th scope="col">Year</th>
-              <th scope="col">Created</th>
-              <th scope="col">Last pushed</th>
+              {rows.map(item => (
+                <th scope="col" key={item.label}>
+                  {item.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {years.map((year, index) => (
               <tr key={year}>
                 <th scope="row">{year}</th>
-                <td>{created[index]}</td>
-                <td>{pushed[index]}</td>
+                {rows.map(item => (
+                  <td key={item.label}>{item.data[index]}</td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -195,12 +211,18 @@ const YearChart = ({ histogram }) => {
   );
 };
 
+const seriesShape = PropTypes.shape({
+  label: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(PropTypes.number).isRequired,
+  tone: PropTypes.oneOf(TONES).isRequired,
+});
+
 YearChart.propTypes = {
-  histogram: PropTypes.shape({
-    years: PropTypes.arrayOf(PropTypes.number).isRequired,
-    created: PropTypes.arrayOf(PropTypes.number).isRequired,
-    pushed: PropTypes.arrayOf(PropTypes.number).isRequired,
-  }).isRequired,
+  years: PropTypes.arrayOf(PropTypes.number).isRequired,
+  series: PropTypes.arrayOf(seriesShape).isRequired,
+  tableSeries: PropTypes.arrayOf(seriesShape),
+  description: PropTypes.string.isRequired,
+  tableCaption: PropTypes.string.isRequired,
 };
 
 export default YearChart;

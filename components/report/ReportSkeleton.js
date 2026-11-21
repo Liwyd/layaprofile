@@ -27,6 +27,7 @@ const SHAPES = {
     { height: '2.2rem', width: 'min(32rem, 100%)' },
     { height: '1.1rem', width: 'min(24rem, 80%)' },
   ],
+  share: [{ height: 'min(28rem, 52vw)', width: 'min(54rem, 100%)' }, { height: '2.2rem' }],
 };
 
 /** Skeleton blocks for every section. The status is announced by the page's live region. */

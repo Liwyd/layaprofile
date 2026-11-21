@@ -1,6 +1,6 @@
 import { apiHandler } from '../../lib/api/handler';
 import { compareProfiles } from '../../lib/analysis/compare';
-import { GitHubError } from '../../lib/github/errors';
+import { GitHubError, isGitHubError } from '../../lib/github/errors';
 import { getDefaultClient } from '../../lib/github/client';
 import { loadProfile } from '../../lib/github/profile';
 import { isValidUsername } from '../../lib/validation';
@@ -36,11 +36,11 @@ const pickFailure = results => {
   const failures = results.map((result, index) => ({ result, which: SIDES[index] }));
   const rejected = failures.filter(({ result }) => result.status === 'rejected');
   const systemic = rejected.find(
-    ({ result }) => !(result.reason instanceof GitHubError) || result.reason.code !== 'NOT_FOUND',
+    ({ result }) => !isGitHubError(result.reason) || result.reason.code !== 'NOT_FOUND',
   );
   const { result, which } = systemic ?? rejected[0];
   const err = result.reason;
-  if (err instanceof GitHubError && err.code === 'NOT_FOUND') {
+  if (isGitHubError(err) && err.code === 'NOT_FOUND') {
     return new GitHubError('NOT_FOUND', `GitHub user ${which} was not found.`, { which });
   }
   return err;

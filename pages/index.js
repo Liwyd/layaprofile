@@ -5,9 +5,11 @@ import Head from '../components/Head';
 import Layout from '../components/ui/Layout';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
+import CompareForm from '../components/ui/CompareForm';
+import Field from '../components/ui/Field';
 import { theme, mixins, media, Section, SectionLabel, SectionBody } from '../style';
 import { isValidUsername } from '../lib/validation';
-const { colors, radius, transition } = theme;
+const { colors } = theme;
 
 const Hero = styled.div`
   padding: clamp(1rem, 6vw, 4rem) 0 clamp(2.5rem, 7vw, 5rem);
@@ -30,73 +32,6 @@ const Hero = styled.div`
   form {
     max-width: 38rem;
     margin-top: clamp(2rem, 5vw, 3.25rem);
-  }
-`;
-
-const Field = styled.div`
-  label {
-    ${mixins.monoLabel};
-    display: block;
-    margin-bottom: 0.4rem;
-    color: ${colors.muted};
-  }
-
-  .row {
-    display: flex;
-    gap: 0.5rem;
-
-    ${media.bp400`
-      flex-direction: column;
-    `};
-  }
-
-  input {
-    flex: 1;
-    min-width: 0;
-    padding: 0.7rem 0.85rem;
-    border: 1px solid ${colors.ink};
-    border-radius: ${radius};
-    background: transparent;
-    font-family: ${theme.fonts.mono};
-    font-size: 1.125rem;
-    transition: border-color ${transition};
-
-    &::placeholder {
-      color: ${colors.muted};
-      opacity: 1;
-    }
-
-    &[aria-invalid='true'] {
-      border-color: ${colors.accent};
-    }
-  }
-
-  .error {
-    margin-top: 0.5rem;
-    color: ${colors.accentText};
-    font-size: 0.9375rem;
-  }
-`;
-
-const CompareFields = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 0.75rem;
-  max-width: 42rem;
-
-  ${media.bp600`
-    grid-template-columns: minmax(0, 1fr);
-  `};
-
-  input {
-    width: 100%;
-    font-size: 1rem;
-  }
-
-  .error {
-    grid-column: 1 / -1;
-    margin: 0;
   }
 `;
 
@@ -160,9 +95,6 @@ const Home = () => {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [searchInvalid, setSearchInvalid] = useState(false);
-  const [first, setFirst] = useState('');
-  const [second, setSecond] = useState('');
-  const [compareError, setCompareError] = useState(null);
 
   const handleSearch = event => {
     event.preventDefault();
@@ -172,21 +104,6 @@ const Home = () => {
       return;
     }
     router.push(`/user/${encodeURIComponent(trimmed)}`);
-  };
-
-  const handleCompare = event => {
-    event.preventDefault();
-    const a = first.trim();
-    const b = second.trim();
-    if (!isValidUsername(a) || !isValidUsername(b)) {
-      setCompareError('Enter two valid GitHub usernames.');
-      return;
-    }
-    if (a.toLowerCase() === b.toLowerCase()) {
-      setCompareError('Choose two different usernames.');
-      return;
-    }
-    router.push(`/compare/${encodeURIComponent(a)}/${encodeURIComponent(b)}`);
   };
 
   return (
@@ -239,54 +156,7 @@ const Home = () => {
             </h2>
           </SectionLabel>
           <SectionBody>
-            <form onSubmit={handleCompare} noValidate>
-              <Field>
-                <CompareFields>
-                  <div>
-                    <label htmlFor="compare-a">First username</label>
-                    <input
-                      id="compare-a"
-                      type="text"
-                      value={first}
-                      onChange={event => {
-                        setFirst(event.target.value);
-                        setCompareError(null);
-                      }}
-                      autoComplete="off"
-                      autoCapitalize="none"
-                      spellCheck={false}
-                      aria-invalid={compareError !== null}
-                      aria-describedby={compareError ? 'compare-error' : undefined}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="compare-b">Second username</label>
-                    <input
-                      id="compare-b"
-                      type="text"
-                      value={second}
-                      onChange={event => {
-                        setSecond(event.target.value);
-                        setCompareError(null);
-                      }}
-                      autoComplete="off"
-                      autoCapitalize="none"
-                      spellCheck={false}
-                      aria-invalid={compareError !== null}
-                      aria-describedby={compareError ? 'compare-error' : undefined}
-                    />
-                  </div>
-                  <Button type="submit" $variant="ghost">
-                    Compare
-                  </Button>
-                  {compareError && (
-                    <p id="compare-error" className="error" role="alert">
-                      {compareError}
-                    </p>
-                  )}
-                </CompareFields>
-              </Field>
-            </form>
+            <CompareForm />
           </SectionBody>
         </Section>
 

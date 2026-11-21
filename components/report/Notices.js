@@ -25,8 +25,9 @@ const Strip = styled.aside`
 /**
  * Quiet notes about how current or complete the data is: a stale cached fallback, and a
  * repository list that was cut at the fetch limit. Renders nothing when there is nothing to say.
+ * `subject` names what is cached when it is not the whole page.
  */
-const Notices = ({ stale = false, fetchedAt, truncated = false, repoCount }) => {
+const Notices = ({ stale = false, fetchedAt, truncated = false, repoCount, subject = 'this' }) => {
   if (!stale && !truncated) return null;
   const when = stale ? formatDateTime(fetchedAt) : null;
   return (
@@ -36,8 +37,8 @@ const Notices = ({ stale = false, fetchedAt, truncated = false, repoCount }) => 
           <p>
             <span className="k">Stale</span>
             {when
-              ? `GitHub is unreachable or limiting requests, so this is cached data from ${when}.`
-              : 'GitHub is unreachable or limiting requests, so this is cached data that may be out of date.'}
+              ? `GitHub is unreachable or limiting requests, so ${subject} is cached data from ${when}.`
+              : `GitHub is unreachable or limiting requests, so ${subject} is cached data that may be out of date.`}
           </p>
         )}
         {truncated && (
@@ -56,6 +57,7 @@ Notices.propTypes = {
   fetchedAt: PropTypes.string,
   truncated: PropTypes.bool,
   repoCount: PropTypes.number,
+  subject: PropTypes.string,
 };
 
 export default Notices;

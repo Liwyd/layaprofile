@@ -38,6 +38,10 @@ const Wrapper = styled.section`
     margin-top: 2rem;
   }
 
+  .extra {
+    margin-top: 2.5rem;
+  }
+
   .actions a {
     ${mixins.button};
     background: transparent;
@@ -78,17 +82,19 @@ const COPY = {
 /**
  * A full-page failure (the profile itself could not be loaded). `error` comes from
  * `describeError`. Retrying only makes sense for failures that can pass, so a missing user offers
- * a new search instead.
+ * a new search instead. `copy` overrides the kicker, title or message for a page with its own
+ * wording (the comparison); `children` render below the actions (a form to correct the input).
  */
-const ErrorState = ({ error, username, onRetry }) => {
-  const copy = COPY[error.kind] ?? COPY.generic;
+const ErrorState = ({ error, username, onRetry, copy: override, children }) => {
+  const copy = { ...(COPY[error.kind] ?? COPY.generic), ...override };
   const missing = error.kind === 'not-found' || error.kind === 'invalid';
   const message =
-    error.kind === 'invalid'
+    override?.message ??
+    (error.kind === 'invalid'
       ? 'GitHub usernames use letters, digits and single hyphens, up to 39 characters.'
       : error.kind === 'not-found'
         ? `GitHub has no public user named "${username}". Check the spelling and try again.`
-        : error.message;
+        : error.message);
   return (
     <Container>
       <Wrapper role="alert">
@@ -99,6 +105,7 @@ const ErrorState = ({ error, username, onRetry }) => {
           {!missing && onRetry && <Button onClick={onRetry}>Try again</Button>}
           <Link href="/">Search another profile</Link>
         </div>
+        {children && <div className="extra">{children}</div>}
       </Wrapper>
     </Container>
   );
@@ -109,6 +116,12 @@ ErrorState.propTypes = {
     .isRequired,
   username: PropTypes.string,
   onRetry: PropTypes.func,
+  copy: PropTypes.shape({
+    kicker: PropTypes.string,
+    title: PropTypes.string,
+    message: PropTypes.string,
+  }),
+  children: PropTypes.node,
 };
 
 export default ErrorState;

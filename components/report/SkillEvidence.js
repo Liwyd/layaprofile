@@ -8,64 +8,10 @@ import Disclosure from '../ui/Disclosure';
 import { Caption } from '../ui/Text';
 import SectionError from './SectionError';
 import StatusTag from './StatusTag';
+import StrengthTag from './StrengthTag';
 import { formatDate, sourceLabel, strengthLabel } from '../../lib/ui/format';
 import { repoUrl } from '../../lib/ui/url';
 const { colors, radius, transition } = theme;
-
-// Pips, shown with the text label: repeated 3, observed 2, weak 1, no public evidence 0.
-const PIPS = { repeated: 3, observed: 2, weak: 1, unknown: 0 };
-
-const Pips = styled.span`
-  display: inline-flex;
-  gap: 2px;
-
-  i {
-    width: 0.45rem;
-    height: 0.45rem;
-    border: 1px solid ${colors.ink};
-  }
-
-  i.on {
-    background: ${colors.ink};
-  }
-`;
-
-const Tag = styled.span`
-  ${mixins.monoLabel};
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.1rem 0.45rem;
-  border: 1px ${props => (props.$strength === 'unknown' ? 'dashed' : 'solid')}
-    ${props => (props.$strength === 'unknown' ? colors.muted : colors.ink)};
-  color: ${props => (props.$strength === 'unknown' ? colors.muted : colors.ink)};
-  font-size: 0.68rem;
-  white-space: nowrap;
-
-  ${Pips} i {
-    border-color: currentColor;
-  }
-
-  ${Pips} i.on {
-    background: currentColor;
-  }
-`;
-
-const StrengthTag = ({ strength }) => {
-  const key = Object.hasOwn(PIPS, strength) ? strength : 'unknown';
-  return (
-    <Tag $strength={key}>
-      <Pips aria-hidden="true">
-        {[0, 1, 2].map(index => (
-          <i key={index} className={index < PIPS[key] ? 'on' : undefined} />
-        ))}
-      </Pips>
-      {strengthLabel(key)}
-    </Tag>
-  );
-};
-
-StrengthTag.propTypes = { strength: PropTypes.string };
 
 const Intro = styled.div`
   display: grid;

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   analysisUrl,
+  compareUrl,
   describeError,
   getJson,
   isAnalysisResponse,
+  isCompareResponse,
   isLearningPathResponse,
   isProfileResponse,
   learningPathUrl,
@@ -41,6 +43,38 @@ export const useProfile = username => {
 
     return () => controller.abort();
   }, [username, attempt]);
+
+  const retry = useCallback(() => setAttempt(count => count + 1), []);
+  return { ...state, retry };
+};
+
+/**
+ * Loads the comparison of two usernames. `status` is `loading`, `ready` or `error`; on error
+ * `error` is the raw failure (see `describeError`, which also says which side was not found).
+ * `retry` reloads, and a response for an earlier pair is ignored.
+ */
+export const useCompare = (a, b) => {
+  const [state, setState] = useState({ status: 'loading', data: null, error: null });
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!a || !b) return undefined;
+    setState({ status: 'loading', data: null, error: null });
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    getJson(compareUrl(a, b), { signal, validate: isCompareResponse })
+      .then(data => {
+        if (!signal.aborted) setState({ status: 'ready', data, error: null });
+      })
+      .catch(err => {
+        if (signal.aborted) return;
+        console.error('Comparison request failed:', err);
+        setState({ status: 'error', data: null, error: err });
+      });
+
+    return () => controller.abort();
+  }, [a, b, attempt]);
 
   const retry = useCallback(() => setAttempt(count => count + 1), []);
   return { ...state, retry };

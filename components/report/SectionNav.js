@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { theme, mixins, media } from '../../style';
-import { SECTIONS, SECTION_IDS } from '../../lib/ui/sections';
+import { SECTIONS } from '../../lib/ui/sections';
 import { useActiveSection } from './hooks';
 const { colors, transition } = theme;
 
@@ -42,13 +43,17 @@ const Nav = styled.nav`
   }
 `;
 
-/** In-page navigation to the numbered sections; the one being read is marked as current. */
-const SectionNav = ({ refreshKey }) => {
-  const active = useActiveSection(SECTION_IDS, refreshKey);
+/**
+ * In-page navigation to the numbered sections (the report's by default); the one being read is
+ * marked as current. `sections` must be a stable list, such as a module constant.
+ */
+const SectionNav = ({ refreshKey, sections = SECTIONS, label = 'Report sections' }) => {
+  const ids = useMemo(() => sections.map(section => section.id), [sections]);
+  const active = useActiveSection(ids, refreshKey);
   return (
-    <Nav aria-label="Report sections">
+    <Nav aria-label={label}>
       <ol>
-        {SECTIONS.map(section => (
+        {sections.map(section => (
           <li key={section.id}>
             <a
               href={`#${section.id}`}
@@ -65,6 +70,14 @@ const SectionNav = ({ refreshKey }) => {
 
 SectionNav.propTypes = {
   refreshKey: PropTypes.string,
+  sections: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      number: PropTypes.string.isRequired,
+      navLabel: PropTypes.string.isRequired,
+    }),
+  ),
+  label: PropTypes.string,
 };
 
 export default SectionNav;
